@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const Token = require('../models/token');
+
 const generateOTP = async () => {
     const otp = Math.floor(100000 + Math.random() * 900000);
     const checkToken = await Token.findOne({otp: otp});

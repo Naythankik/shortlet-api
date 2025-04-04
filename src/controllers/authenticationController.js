@@ -93,7 +93,7 @@ const login = async (req, res) => {
 
         user.password = undefined;
 
-        const token = await createAccessToken({ email: user.email, id: user._id }, "3h");
+        const token = await createAccessToken({ email: user.email, id: user._id }, process.env.JWT_EXPIRES);
 
         return res.status(200).send({
             access_token : token,

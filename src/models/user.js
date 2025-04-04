@@ -36,30 +36,19 @@ const User = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ['admin' , 'user', 'rider'],
+        enum: ['admin' , 'user'],
     },
     profilePicture: {
         type: String,
         required: false,
         default: 'picture.png',
     },
-    status: {
-        type: String,
-        required: false,
-        enum: ['blocked', 'active', 'inactive', 'pending'],
-        default: 'active',
-    },
-    ratings: {
-        value: {
-            type: Number,
-            default: 0,
-        },
-        numberOfRaters: {
-            type: Number,
-            default: 0
+    apartment: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Apartment',
         }
-    },
-    rememberToken: String,
+    ],
 }, { timestamps: true });
 
 

@@ -1,7 +1,9 @@
 const errorHandler = require('../helper/error-handlers');
 const apartmentResource = require('../resources/apartmentResource');
+const reviewResource = require('../resources/reviewResource');
 const Apartment = require('../models/apartment');
-const {createRequest} = require("../requests/apartmentRequest");
+const Review = require('../models/review');
+const {createRequest, updateRequest, createReviewRequest, updateReviewRequest} = require("../requests/apartmentRequest");
 const {uploadImage} = require("../helper/file");
 
 const createApartment = async function (req, res) {
@@ -26,7 +28,40 @@ const createApartment = async function (req, res) {
         }
 
         const apartment = await Apartment.create(payload);
-        return res.status(200).json(apartment);
+
+        return res.status(200).json({
+            data: apartmentResource(apartment)
+        });
+    }catch(err){
+        console.error(err)
+        return res.status(500).json({message: err.message});
+    }
+}
+
+const updateApartment = async function (req, res) {
+    const { error, value } = updateRequest(req.body);
+    const { id: apartmentId } = req.params;
+
+    if(error) return res.status(400).json({ message: error.details.map(err => err.message) });
+
+    try{
+        let payload = { ...value };
+        if(req.files){
+            const uploadedImages = await Promise.all(
+                    req.files.map(file => uploadImage(file.path, value.name ?? 'shortlet image'))
+                );
+            //This appends the elements to the array instead of replacing it
+            payload.$push = {
+                images: { $each: uploadedImages }
+            };
+        }
+
+        const apartment = await Apartment.findByIdAndUpdate(apartmentId, payload, { new: true });
+
+        return res.status(200).json({
+            message: 'Apartment updated successfully.',
+            data: apartmentResource(apartment)
+        });
     }catch(err){
         console.error(err)
         return res.status(500).json({message: err.message});
@@ -121,10 +156,118 @@ const popularApartments = async (req, res) => {
     }
 }
 
+const addReview = async (req, res) => {
+    const { error, value }  = createReviewRequest(req.body)
+
+    if(error) return res.status(400).json(errorHandler({message: error.details[0].message}));
+
+    const { id } = req.auth;
+    const { id : apartmentId} = req.params;
+    try{
+        const apartment = await Apartment.findById(apartmentId);
+
+        if(!apartment){
+            return res.status(404).json(errorHandler({message:"not found"}))
+        }
+
+        if(apartment.ownerId === id){
+            return res.status(405).json(errorHandler({message: 'You can add review to your apartment'}))
+        }
+
+        const { rating, comment } = value;
+
+        const review = await Review.create({
+            rating, comment,
+            user: id,
+            apartment: apartmentId
+        })
+
+        apartment.reviews.push(review._id)
+        await apartment.save();
+
+        return res.status(200).json({
+            message: 'Thank you for your review. Visit us again and refer us to a friend and family'
+        });
+
+    }catch (err){
+        console.error(err)
+        return res.status(500).json(errorHandler({message: err.message}))
+    }
+}
+
+const updateReview = async (req, res) => {
+    const { error, value }  = updateReviewRequest(req.body)
+
+    if(error) return res.status(400).json(errorHandler({message: error.details[0].message}));
+
+    const { id : apartmentId, reviewId } = req.params;
+
+    try{
+        const review = await Review.findOne({
+            _id: reviewId,
+            apartment: apartmentId
+        });
+
+        if(!review){
+            return res.status(404).json(errorHandler({message:"not found"}))
+        }
+
+        await review.updateOne({ ...value, relevant: { yes: 0, no: 0 }});
+
+        return res.status(200).json({
+            message: 'Thank you for your review. Visit us again and refer us to a friend and family'
+        });
+
+    }catch (err){
+        console.error(err)
+        return res.status(500).json(errorHandler({message: err.message}))
+    }
+}
+
+const deleteReview = async (req, res) => {
+    const { id } = req.auth;
+    const { id: apartmentId, reviewId} = req.params;
+    try{
+        const review = await Review.findOne({
+            _id: reviewId,
+            apartment: apartmentId,
+            user: id
+        });
+
+        if(!review){
+            return res.status(400).json(errorHandler({message:"not found"}))
+        }
+        await review.deleteOne({});
+
+        return res.status(200).json({
+            message: 'Your review has been deleted'
+        })
+    }catch (err){
+        console.error(err)
+        return res.status(500).json(errorHandler({message: err.message}))
+    }
+}
+
+const getReviews = async (req, res) => {
+    const { id : apartmentId} = req.params;
+    try{
+        const reviews = await Review.find({apartment: apartmentId})
+
+        return res.status(200).json({reviews: reviewResource(reviews)});
+    }catch (err){
+        console.error(err)
+        return res.status(500).json(errorHandler({message: err.message}))
+    }
+}
+
 module.exports = {
     create: createApartment,
     read: readApartments,
     readAnApartment: readApartment,
+    update: updateApartment,
     deleteAnApartment: deleteApartment,
     popularApartments,
+    addReview,
+    getReviews,
+    deleteReview
 }

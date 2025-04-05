@@ -4,6 +4,7 @@ const ApartmentSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
+        unique: true
     },
     description: {
         type: String,
@@ -76,16 +77,10 @@ const ApartmentSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    ratings: {
-        value: {
-            type: Number,
-            default: 0,
-        },
-        numberOfRaters: {
-            type: Number,
-            default: 0
-        }
-    }
+    reviews: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Review'
+    }],
 }, { timestamps: true });
 
 ApartmentSchema.index({ ownerId: 1 });

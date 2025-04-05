@@ -55,7 +55,23 @@ const updateRequest = (data) => {
     }).validate(data, { abortEarly: false})
 }
 
+const createReviewRequest = (data) => {
+    return Joi.object({
+        comment: Joi.string().required(),
+        rating: Joi.number().min(1).max(5).required()
+    }).validate(data)
+}
+
+const updateReviewRequest = (data) => {
+    return Joi.object({
+        comment: Joi.string().optional(),
+        rating: Joi.number().min(1).max(5).optional()
+    }).validate(data)
+}
+
 module.exports = {
     createRequest,
-    updateRequest
+    updateRequest,
+    createReviewRequest,
+    updateReviewRequest
 }

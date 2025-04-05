@@ -27,5 +27,5 @@ module.exports = (apartments) => {
     return Array.isArray(apartments) && apartments.length > 1
         ? apartments.map(apartment => apartmentResource(apartment))
         : apartments.length === 1 ? apartmentResource(apartments[0])
-        : [];
+        : apartmentResource(apartments);
 };

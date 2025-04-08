@@ -27,8 +27,8 @@ connection();
 
 app.use('/api/v1/shortlet-api/auth', authRoutes)
 app.use('/api/v1/shortlet-api/user', authentication, userAuthorization, userRoutes)
-app.use('/api/v1/shortlet-api/apartments', authentication, userAuthorization, apartmentRoutes)
-app.use('/api/v1/shortlet-api/bookings', bookingRoutes)
+app.use('/api/v1/shortlet-api/apartments', authentication, apartmentRoutes)
+app.use('/api/v1/shortlet-api/bookings', authentication, bookingRoutes)
 app.use('/api/v1/shortlet-api/admins', adminRoutes)
 app.use('/api/v1/shortlet-api/wishlists', wishlistRoutes)
 app.use('/api/v1/shortlet-api/discounts', discountRoutes)

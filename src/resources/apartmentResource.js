@@ -1,3 +1,5 @@
+const ReviewResource = require('./reviewResource');
+
 const apartmentResource = (apartment) => {
     return {
         id: apartment._id,
@@ -7,7 +9,7 @@ const apartmentResource = (apartment) => {
         location: apartment.location ? {
             lat: apartment.location.coordinates[0],
             lng: apartment.location.coordinates[1]
-        } : { lat: 0, lng: 0 },
+        } : undefined,
         discount: apartment.discount,
         images: apartment.images,
         properties: apartment.properties,
@@ -15,17 +17,14 @@ const apartmentResource = (apartment) => {
         price: apartment.price,
         availability: apartment.availability,
         isAvailable: apartment.isAvailable,
-        ratings: apartment.ratings && apartment.ratings.numberOfRaters > 0
-            ? ((apartment.ratings.value / apartment.ratings.numberOfRaters) * 5).toFixed(1)
-            : null,
-        createdAt: apartment.createdAt ?? null,
-        updatedAt: apartment.updatedAt ?? null
+        reviews: ReviewResource(apartment.reviews),
+        createdAt: apartment.createdAt,
+        updatedAt: apartment.updatedAt
     }
 }
 
 module.exports = (apartments) => {
-    return Array.isArray(apartments) && apartments.length > 1
+    return apartments.length > 0
         ? apartments.map(apartment => apartmentResource(apartment))
-        : apartments.length === 1 ? apartmentResource(apartments[0])
         : apartmentResource(apartments);
 };

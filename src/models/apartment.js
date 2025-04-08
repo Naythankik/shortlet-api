@@ -78,13 +78,12 @@ const ApartmentSchema = new mongoose.Schema({
         required: true
     },
     reviews: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Review'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
     }],
 }, { timestamps: true });
 
 ApartmentSchema.index({ ownerId: 1 });
-ApartmentSchema.index({ 'ratings.value': -1 });
 
 
 module.exports = mongoose.model("Apartment", ApartmentSchema);

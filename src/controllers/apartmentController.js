@@ -69,10 +69,9 @@ const updateApartment = async function (req, res) {
 }
 
 const readApartments = async (req, res) => {
-    const { id } = req.auth;
     const { page = 1, limit = 15, date, search } = req.query;
     const skip = (page - 1) * limit;
-    let query = {ownerId: id};
+    let query= {};
 
     if(date){
         query.createdAt = { $gte: date };
@@ -86,7 +85,6 @@ const readApartments = async (req, res) => {
         const apartments = await Apartment.find(query)
             .skip(skip)
             .limit(limit);
-
 
         const totalPages = await Apartment.countDocuments(query);
 
@@ -107,9 +105,9 @@ const readApartments = async (req, res) => {
 
 const readApartment = async (req, res) => {
     try{
-        const { id } = req.auth;
-        const apartmentId = req.params.id;
-        const apartment = await Apartment.findOne({ownerId: id, _id: apartmentId});
+        const { apartmentId } = req.params;
+        const apartment = await Apartment.findById(apartmentId)
+            .populate('reviews');
 
         if(!apartment){
             return res.status(404).json(errorHandler({message:"not found"}))
@@ -142,9 +140,9 @@ const deleteApartment = async (req, res) => {
 }
 
 const popularApartments = async (req, res) => {
-    const { id } = req.auth;
+    return res.status(200).json({message: 'Coming soon'})
     try{
-        const apartments = await Apartment.find({ownerId: id})
+        const apartments = await Apartment.find()
             .sort({ 'ratings.value': -1 });
 
         return res.status(200).json({

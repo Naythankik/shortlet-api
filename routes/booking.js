@@ -1,11 +1,13 @@
 const express = require('express');
+const { update, read, create, cancel, readAll} = require("../src/controllers/bookingController");
+const {userAuthorization} = require("../src/middlewares/authorization");
 
 const router = express.Router();
 
-router.post('/create')
-router.get('/read')
-router.get('/read/:id')
-router.put('/update/:id')
-router.delete('/delete/:id')
+router.post('/create/:apartmentId', userAuthorization, create)
+router.get('/read', userAuthorization, readAll)
+router.get('/read/:bookingId', userAuthorization, read)
+router.put('/update/:bookingId', userAuthorization, update)
+router.put('/cancel/:bookingId', userAuthorization, cancel)
 
 module.exports = router;

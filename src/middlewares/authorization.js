@@ -14,12 +14,11 @@ const adminAuthorization = async (req, res, next) => {
     next()
 };
 
-
 const userAuthorization = async (req, res, next) => {
     const { email } = req.auth;
     const user = await User.findOne({ email });
     if (!user) {
-        return res.status(401).json(errorHandler({ message: "not found" }));
+        return res.status(401).json(errorHandler({ message: "Invalid user" }));
     }
 
     if(user.role !== "user") {
@@ -28,7 +27,22 @@ const userAuthorization = async (req, res, next) => {
     next()
 }
 
+const ownerAuthorization = async (req, res, next) => {
+    const { email } = req.auth;
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(401).json(errorHandler({ message: "Invalid user" }));
+    }
+
+    if(user.role !== "admin") {
+        return res.status(403).send(errorHandler({ message: "Invalid role" }));
+    }
+    next()
+}
+
+
 module.exports = {
     adminAuthorization,
     userAuthorization,
+    ownerAuthorization
 };

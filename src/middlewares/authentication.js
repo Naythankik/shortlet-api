@@ -1,5 +1,4 @@
 const {verifyAccessToken, createAccessToken} = require("../helper/token");
-const errorHandler = require("../helper/error-handlers");
 const User = require("../models/user");
 
 const authentication = async (req, res, next) => {
@@ -19,7 +18,7 @@ const authentication = async (req, res, next) => {
         const user = await User.findOne({email});
 
         if(!user) {
-            return res.status(404).json(errorHandler({ message: "not found" }));
+            return res.status(404).json({ message: "User is not found" });
         }
 
         const now = Date.now().valueOf() / 1000;

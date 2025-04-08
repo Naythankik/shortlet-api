@@ -3,15 +3,18 @@ const apartmentResource = (review) => {
         id: review._id,
         rating: review.rating,
         comment: review.comment,
-        relevant:  review.relevant.yes,
-        createdAt: review.createdAt ?? null,
-        updatedAt: review.updatedAt ?? null
+        relevant:  review.relevant?.yes,
+        createdAt: review.createdAt,
+        updatedAt: review.updatedAt
     }
 }
 
 module.exports = (reviews) => {
-    return Array.isArray(reviews) && reviews.length > 1
-        ? reviews.map(review => apartmentResource(review))
-        : reviews.length === 1 ? apartmentResource(reviews[0])
-        : apartmentResource(reviews);
+    if(reviews){
+        return reviews.length > 0
+            ? reviews.map(review => apartmentResource(review))
+            : apartmentResource(reviews);
+    }else{
+        return reviews;
+    }
 };

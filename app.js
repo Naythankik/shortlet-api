@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const PORT = process.env.PORT || 3000;
 const connection = require('./config/database');
@@ -18,11 +17,11 @@ const authentication = require('./src/middlewares/authentication')
 const {userAuthorization, adminAuthorization} = require("./src/middlewares/authorization");
 
 const app = express();
+connection();
+
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-connection();
 
 
 app.use('/api/v1/shortlet-api/auth', authRoutes)

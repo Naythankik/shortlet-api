@@ -6,9 +6,9 @@ const apartmentResource = (apartment) => {
         name: apartment.name,
         description: apartment.description,
         address: apartment.address,
-        location: apartment.location ? {
+        location: apartment.location?.coordinates ? {
             lat: apartment.location.coordinates[0],
-            lng: apartment.location.coordinates[1]
+            lng: apartment.location.coordinates[1],
         } : undefined,
         discount: apartment.discount,
         images: apartment.images,

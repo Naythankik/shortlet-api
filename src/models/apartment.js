@@ -49,10 +49,6 @@ const ApartmentSchema = new mongoose.Schema({
       startDate: Date,
       endDate: Date
     },
-    ownerId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    },
     images: {
         type: [String],
         required: true

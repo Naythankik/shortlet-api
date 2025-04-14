@@ -1,4 +1,5 @@
-const Apartment = require('./apartmentResource')
+const apartmentResource = require('./apartmentResource')
+const userResource = require('./userResource')
 
 const bookingResource = (booking) => {
     return {
@@ -10,7 +11,8 @@ const bookingResource = (booking) => {
         paymentStatus: booking.paymentStatus,
         specialRequests: booking.specialRequests,
         bookingStatus: booking.bookingStatus,
-        apartment: Apartment(booking.apartment),
+        apartment: apartmentResource(booking.apartment),
+        // user: userResource(booking.user),
         createdAt: booking.createdAt,
         updatedAt: booking.updatedAt
     }

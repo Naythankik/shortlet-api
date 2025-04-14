@@ -15,7 +15,7 @@ const discountRoutes = require('./routes/discount');
 const messageRoutes = require('./routes/message');
 
 const authentication = require('./src/middlewares/authentication')
-const {userAuthorization} = require("./src/middlewares/authorization");
+const {userAuthorization, adminAuthorization} = require("./src/middlewares/authorization");
 
 const app = express();
 app.use(helmet());
@@ -29,11 +29,16 @@ app.use('/api/v1/shortlet-api/auth', authRoutes)
 app.use('/api/v1/shortlet-api/user', authentication, userAuthorization, userRoutes)
 app.use('/api/v1/shortlet-api/apartments', authentication, apartmentRoutes)
 app.use('/api/v1/shortlet-api/bookings', authentication, bookingRoutes)
-app.use('/api/v1/shortlet-api/admins', adminRoutes)
+app.use('/api/v1/shortlet-api/admin',authentication, adminAuthorization, adminRoutes)
 app.use('/api/v1/shortlet-api/wishlists', wishlistRoutes)
 app.use('/api/v1/shortlet-api/discounts', discountRoutes)
 app.use('/api/v1/shortlet-api/message', messageRoutes)
 
+app.use('/', (req, res) => {
+    res.status(200).json({
+        message: 'Whoops!'
+    })
+})
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

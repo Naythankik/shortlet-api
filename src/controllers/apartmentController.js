@@ -83,6 +83,7 @@ const readApartments = async (req, res) => {
 
     try{
         const apartments = await Apartment.find(query)
+            .select('name description price address')
             .skip(skip)
             .limit(limit);
 

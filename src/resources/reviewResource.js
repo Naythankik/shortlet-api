@@ -4,6 +4,7 @@ const apartmentResource = (review) => {
         rating: review.rating,
         comment: review.comment,
         relevant:  review.relevant?.yes,
+        user: review.user,
         createdAt: review.createdAt,
         updatedAt: review.updatedAt
     }

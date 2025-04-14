@@ -32,21 +32,6 @@ const seederBookings = async () => {
     }
 };
 
-const updateUserSeeders = async () => {
-    try {
-        const apartments = await Apartment.find();
-
-        for (const apartment of apartments) {
-            await User.findByIdAndUpdate(apartment.ownerId, {
-                $push: { apartment: apartment._id }
-            });
-        }
-    } catch (err) {
-        console.error('Error updating users with apartments:', err);
-        throw err;
-    }
-}
-
 const seederApartments = async () => {
     const apartments = await apartmentFactory(70);
     try {
@@ -62,9 +47,8 @@ const seederApartments = async () => {
 // Run seeders sequentially
 const runSeeders = async () => {
     try {
-        // await seederUsers();
-        // await seederApartments()
-        // await updateUserSeeders()
+        await seederUsers();
+        await seederApartments()
         await seederBookings()
         console.log('All seeders completed successfully!');
         process.exit(0);

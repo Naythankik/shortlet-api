@@ -43,12 +43,6 @@ const User = new mongoose.Schema({
         required: false,
         default: 'picture.png',
     },
-    apartment: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Apartment',
-        }
-    ],
 }, { timestamps: true });
 
 

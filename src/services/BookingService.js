@@ -131,7 +131,7 @@ class BookingService {
         try{
             const booking = await Booking.find(query)
                 .select('-user')
-                .populate("apartment", 'name description location images')
+                .populate("apartment", 'name description location images adress')
                 .skip(skip)
                 .limit(limit);
 

@@ -16,8 +16,7 @@ const user = async () => {
         profilePicture: faker.image.avatar(),
         role: faker.helpers.arrayElement(['admin','user']),
         createdAt: faker.date.past(),
-        updatedAt: faker.date.past(),
-        apartment: []
+        updatedAt: faker.date.past()
     }
 }
 

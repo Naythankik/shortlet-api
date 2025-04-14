@@ -1,13 +1,4 @@
 const { faker } = require('@faker-js/faker')
-const User = require('../models/user');
-
-
-const randomObjectId = async () => {
-    const result = await User.aggregate([
-            { $match: { role: { $ne : 'admin' } } },
-            { $sample: { size: 1 } }]);
-    return result[0]?._id;
-};
 
 const apartment = async () => {
     return {
@@ -27,7 +18,6 @@ const apartment = async () => {
             ]
         },
         price: faker.finance.amount({min:20, max:5000}),
-        ownerId: await randomObjectId(),
         discount: {
             percentage: faker.number.float({min:3, max:35, fractionDigits: 2}),
             startDate: Date.now(),

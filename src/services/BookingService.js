@@ -140,7 +140,7 @@ class BookingService {
             }
 
             return res.status(200).json({
-                booking: bookingResource(booking)
+                booking: booking ? bookingResource(booking) : booking
             })
         }catch(err){
             console.error(err);

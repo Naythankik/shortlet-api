@@ -16,6 +16,9 @@ const userResource = (user) => {
 }
 
 module.exports = (users) => {
-
-    return users.length > 0 ? users.map(user => userResource(user)) : userResource(users)
+    if(users){
+        return users.length > 0 ? users.map(user => userResource(user)) : userResource(users)
+    }else{
+        return users;
+    }
 };

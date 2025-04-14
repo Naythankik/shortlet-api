@@ -24,7 +24,11 @@ const apartmentResource = (apartment) => {
 }
 
 module.exports = (apartments) => {
-    return apartments.length > 0
-        ? apartments.map(apartment => apartmentResource(apartment))
-        : apartmentResource(apartments);
+    if(apartments){
+        return apartments.length > 0
+            ? apartments.map(apartment => apartmentResource(apartment))
+            : apartmentResource(apartments);
+    }else{
+        return apartments;
+    }
 };

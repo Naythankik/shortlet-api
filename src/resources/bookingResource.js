@@ -19,5 +19,11 @@ const bookingResource = (booking) => {
 }
 
 module.exports = (bookings) => {
-    return bookings.length > 0 ? bookings.map(booking => bookingResource(booking)) : bookingResource(bookings)
+    if(bookings){
+        return bookings.length > 0
+            ? bookings.map(booking => bookingResource(booking))
+            : bookingResource(bookings);
+    }else{
+        return bookings;
+    }
 };

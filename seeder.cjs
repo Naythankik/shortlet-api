@@ -1,9 +1,11 @@
 const userFactory = require('./src/factory/userFactory');
 const apartmentFactory = require('./src/factory/apartmentFactory');
 const bookingFactory = require('./src/factory/bookingFactory');
+const reviewFactory = require('./src/factory/reviewsFactory');
 const User = require('./src/models/user');
 const Booking = require('./src/models/bookings');
 const Apartment = require('./src/models/apartment');
+const Review = require('./src/models/review');
 require('dotenv').config();
 
 const connection = require("./config/database");
@@ -43,6 +45,32 @@ const seederApartments = async () => {
     }
 };
 
+const updateUserSeeders = async () => {
+    try {
+        const reviews = await Review.find();
+
+        for (const review of reviews) {
+            await Apartment.findByIdAndUpdate(review.apartment, {
+                $push: {reviews: review._id}
+            });
+        }
+    } catch (err) {
+        console.error('Error updating users with apartments:', err);
+        throw err;
+    }
+}
+
+const seederReviews = async () => {
+    const reviews = await reviewFactory(20);
+    try {
+        await Review.insertMany(reviews);
+        console.log('Review seeded successfully');
+    } catch (err) {
+        console.error('Error seeding reviews:', err);
+        throw err;
+    }
+};
+
 
 // Run seeders sequentially
 const runSeeders = async () => {
@@ -50,6 +78,8 @@ const runSeeders = async () => {
         await seederUsers();
         await seederApartments()
         await seederBookings()
+        await seederReviews()
+        await updateUserSeeders()
         console.log('All seeders completed successfully!');
         process.exit(0);
     } catch (err) {

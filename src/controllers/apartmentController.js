@@ -108,7 +108,12 @@ const readApartment = async (req, res) => {
     try{
         const { apartmentId } = req.params;
         const apartment = await Apartment.findById(apartmentId)
-            .populate('reviews');
+            .populate({
+                path: 'reviews',
+                populate: {
+                    path: 'user'
+                }
+            });
 
         if(!apartment){
             return res.status(404).json(errorHandler({message:"not found"}))

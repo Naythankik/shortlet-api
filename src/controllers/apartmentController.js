@@ -83,7 +83,7 @@ const readApartments = async (req, res) => {
 
     try{
         const apartments = await Apartment.find(query)
-            .select('name description price address')
+            .select('name description price address images')
             .skip(skip)
             .limit(limit);
 
@@ -111,7 +111,8 @@ const readApartment = async (req, res) => {
             .populate({
                 path: 'reviews',
                 populate: {
-                    path: 'user'
+                    path: 'user',
+                    select: 'firstName lastName -_id profilePicture'
                 }
             });
 

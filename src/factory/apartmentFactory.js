@@ -24,7 +24,7 @@ const apartment = async () => {
             endDate: faker.date.soon()
         },
         images: faker.helpers.multiple(() => {
-            return faker.image.url()
+            return faker.image.urlLoremFlickr()
         }),
         properties: faker.helpers.multiple(() => {
             return faker.commerce.productMaterial()

@@ -61,7 +61,7 @@ const updateUserSeeders = async () => {
 }
 
 const seederReviews = async () => {
-    const reviews = await reviewFactory(20);
+    const reviews = await reviewFactory(120);
     try {
         await Review.insertMany(reviews);
         console.log('Review seeded successfully');
@@ -75,10 +75,10 @@ const seederReviews = async () => {
 // Run seeders sequentially
 const runSeeders = async () => {
     try {
-        await seederUsers();
+        // await seederUsers();
         await seederApartments()
-        await seederBookings()
-        await seederReviews()
+        // await seederBookings()
+        // await seederReviews()
         await updateUserSeeders()
         console.log('All seeders completed successfully!');
         process.exit(0);

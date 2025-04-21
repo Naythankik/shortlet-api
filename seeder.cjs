@@ -76,7 +76,7 @@ const seederReviews = async () => {
 const runSeeders = async () => {
     try {
         // await seederUsers();
-        await seederApartments()
+        // await seederApartments()
         // await seederBookings()
         // await seederReviews()
         await updateUserSeeders()

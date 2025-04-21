@@ -69,32 +69,36 @@ const updateApartment = async function (req, res) {
 }
 
 const readApartments = async (req, res) => {
-    const { page = 1, limit = 15, date, search } = req.query;
+    const { page = 1, limit = 15, sortBy, search } = req.query;
     const skip = (page - 1) * limit;
     let query= {};
-
-    if(date){
-        query.createdAt = { $gte: date };
-    }
 
     if(search){
         query.name = new RegExp(search, 'i')
     }
 
     try{
-        const apartments = await Apartment.find(query)
+        let queryBuilder = Apartment.find(query)
             .select('name description price address images')
             .skip(skip)
             .limit(limit);
 
-        const totalPages = await Apartment.countDocuments(query);
+        if (sortBy) {
+            queryBuilder = queryBuilder.sort(sortBy);
+        }
+
+        const [apartments, totalItems] = await Promise.all([
+            queryBuilder.exec(),
+            Apartment.countDocuments(query)
+        ]);
+
 
         return res.status(200).json({
             apartments : apartmentResource(apartments),
             pagination: {
                 currentPage: Number(page),
-                totalPages: Math.ceil(totalPages / limit),
-                totalItems: totalPages,
+                totalPages: Math.ceil(totalItems / limit),
+                totalItems: totalItems,
                 itemsPerPage: Number(limit)
             }
         });

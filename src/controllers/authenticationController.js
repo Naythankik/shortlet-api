@@ -42,7 +42,7 @@ const register = async (req, res) => {
                     warning,
                     token.otp,
                     token.token,
-                    'account-verification'
+                    'account/verification'
                 ));
             }catch (e){
                 console.error(e)
@@ -120,7 +120,7 @@ const verifyAccount = async (req, res) => {
         const userToken = await Token.findOne({token}).populate("user");
 
         if (!userToken) {
-            return res.status(400).json({ message: "Token is invalid" });
+            return res.status(498).json({ message: "Token is invalid" });
         }
 
         if(userToken.otp !== value.otp){
@@ -128,7 +128,7 @@ const verifyAccount = async (req, res) => {
         }
 
         if(userToken.expiresIn <= Date.now()) {
-            return res.status(401).send({
+            return res.status(498).send({
                 message: "Token expired"
             })
         }
@@ -147,22 +147,19 @@ const verifyAccount = async (req, res) => {
 }
 
 const requestVerification = async (req, res) => {
-    const { error, value } = Joi.object({
-        'email': Joi.string().email().required(),
-    }).validate(req.body, { abortEarly: false});
+    const token = req.params.token;
+    const userToken = await Token.findOne({token}).populate("user");
 
-    if (error) {
-        return res.status(422).json({ message: error.details.map(err => err.message) });
+    if(!userToken){
+        return res.status(404).json({message: "Invalid token"});
     }
 
-    const { email } = value;
+    if(Date.now() < userToken.expiresIn) {
+        return res.status(498).json({message: "Token has\'nt expired yet."})
+    }
 
     try{
-        const user = await User.findOne({email});
-
-        if (!user) {
-            return res.status(401).send({message: "Invalid credentials, Try again!"});
-        }
+        const user = userToken.user;
 
         if(user.isVerified){
             return res.status(422).json({message: "User is verified already!"})
@@ -187,8 +184,10 @@ const requestVerification = async (req, res) => {
                 warning,
                 token.otp,
                 token.token,
-                'account-verification'
+                'account/verification'
             ));
+
+            await userToken.deleteOne();
         }catch (e){
             console.error(e)
             return res.status(422).json({ message: e.message });
@@ -279,7 +278,7 @@ const resetPassword = async (req, res) => {
         }
 
         if(Date.now() > userToken.expiresIn) {
-            return res.status(498).send({message: "Token has expired.......Request for new token"})
+            return res.status(498).json({message: "Token has expired.......Request for new token"})
         }
 
         userToken.user.password = password;

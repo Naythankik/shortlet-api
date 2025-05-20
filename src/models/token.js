@@ -4,7 +4,7 @@ const Token = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     type: {
         type: String,
-        enum: ['refresh', 'verification', 'password-reset'],
+        enum: ['verification', 'password-reset'],
         required: true
     },
     otp: {

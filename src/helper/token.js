@@ -5,12 +5,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const Token = require('../models/token');
 
 const generateOTP = async () => {
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    const checkToken = await Token.findOne({otp: otp});
+    const otpString = Math.floor( Math.random() * 999999).toString();
+    const otp = otpString.padStart(6, '0') * 1;
+    const checkToken = await Token.findOne({ otp: otp });
     if(checkToken) {
         return generateOTP();
     }
-    return otp.toString();
+    return otp;
 }
 
 const generateToken = () => {

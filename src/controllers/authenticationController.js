@@ -5,7 +5,7 @@ const { generateOTP, generateToken, createAccessToken, createRefreshToken, verif
 const { sendMail, getMessageTemplate } = require("../helper/mail");
 const Joi = require("joi");
 const e = require("express");
-const { registerRequest, loginRequest} = require("../requests/authRequest");
+const { registerRequest, loginRequest } = require("../requests/authRequest");
 
 const register = async (req, res) => {
     const { error, value } = registerRequest(req.body);
@@ -25,10 +25,13 @@ const register = async (req, res) => {
         if(newUser){
             try {
                 const token = await Token.create({
+                    user: newUser._id,
+                    type: 'verification',
                     otp: await generateOTP(),
                     token: generateToken(),
-                    user: newUser._id,
-                    expiresIn: Date.now() + 10 * 60 * 1000
+                    userAgent: req.get('User-Agent'),
+                    ip: req.ip,
+                    expiresIn: Date.now() + 10 * 60 * 1000 //10 mins
                 });
 
                 const subject = 'Email Verification'
@@ -136,7 +139,7 @@ const verifyAccount = async (req, res) => {
     try {
         const userToken = await Token.findOne({token}).populate("user");
 
-        if (!userToken) {
+        if (!userToken || !userToken.isValid) {
             return res.status(498).json({ message: "Token is invalid" });
         }
 
@@ -151,9 +154,10 @@ const verifyAccount = async (req, res) => {
         }
 
         userToken.user.isVerified = true;
-        await userToken.user.save();
+        userToken.isValid = false;
 
-        await Token.findByIdAndDelete(userToken._id)
+        await userToken.save();
+        await userToken.user.save();
 
         return res.status(200).send({ message: "User verified successfully" });
     } catch (err) {
@@ -165,7 +169,7 @@ const verifyAccount = async (req, res) => {
 
 const requestVerification = async (req, res) => {
     const token = req.params.token;
-    const userToken = await Token.findOne({token}).populate("user");
+    const userToken = await Token.findOne({token}).populate('user');
 
     if(!userToken){
         return res.status(404).json({message: "Invalid token"});
@@ -179,7 +183,9 @@ const requestVerification = async (req, res) => {
         const user = userToken.user;
 
         if(user.isVerified){
-            return res.status(422).json({message: "User is verified already!"})
+            return res.status(422).json({
+                message: "User is verified already!"
+            });
         }
 
         try {
@@ -187,7 +193,10 @@ const requestVerification = async (req, res) => {
                 otp: await generateOTP(),
                 token: generateToken(),
                 user: user._id,
-                expiresIn: Date.now() + 10 * 60 * 1000
+                expiresIn: Date.now() + 10 * 60 * 1000,
+                type: 'verification',
+                userAgent: req.get('User-Agent'),
+                ip: req.ip,
             });
 
             const subject = 'Email Re-Verification'

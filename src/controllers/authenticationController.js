@@ -1,7 +1,7 @@
 const User = require('../models/user');
 const Token = require('../models/token');
 const userResource = require('../resources/userResource');
-const { generateOTP, generateToken, createAccessToken} = require("../helper/token");
+const { generateOTP, generateToken, createAccessToken, createRefreshToken, verifyToken} = require("../helper/token");
 const { sendMail, getMessageTemplate } = require("../helper/mail");
 const Joi = require("joi");
 const e = require("express");
@@ -68,7 +68,7 @@ const login = async (req, res) => {
     const { error, value } = loginRequest(req.body);
 
     if (error) {
-        return res.status(422).json({ message: error.details.map(err => err.message) });
+        return res.status(422).json({ success: false, message: error.details.map(err => err.message) });
     }
 
     try {
@@ -81,7 +81,7 @@ const login = async (req, res) => {
 
         const doesPasswordMatch = await user.comparePassword(password);
         if (!doesPasswordMatch) {
-            return res.status(401).send({
+            return res.status(401).json({
                 success: false,
                 message: "Invalid credentials, Try again!",
             });
@@ -93,15 +93,32 @@ const login = async (req, res) => {
 
         user.password = undefined;
 
-        const token = await createAccessToken({ email: user.email, id: user._id }, process.env.JWT_EXPIRES);
+        const accessToken = await createAccessToken({
+            user: { email: user.email, id: user._id }
+        }, process.env.JWT_EXPIRES);
+
+        const refreshToken = await createRefreshToken({
+            user: { email: user.email, id: user._id }
+        }, process.env.REFRESH_TOKEN_EXPIRES || '14d');
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+        });
+
 
         return res.status(200).send({
-            access_token : token,
+            access_token : accessToken,
             admin: userResource(user)
         });
     }catch (error) {
-        console.error(error);
-        return res.status(400).send(error.message);
+        return res.status(500).json({
+            success: false,
+            message: 'An error occurred during login',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 }
 
@@ -198,6 +215,54 @@ const requestVerification = async (req, res) => {
         return res.status(500).send({error: err.message})
     }
 }
+
+const refreshAccessToken = async (req, res) => {
+    const refreshToken = req.cookies?.refreshToken ||
+        (req.headers.cookie && req.headers.cookie.split(';')
+            .find(c => c.trim().startsWith('refreshToken='))?.split('=')[1]);
+
+    if (!refreshToken) {
+        return res.status(401).json({
+            success: false,
+            message: 'Refresh token required'
+        });
+    }
+
+    try {
+        const verifiedToken = await verifyToken(refreshToken);
+
+        if (Date.now() >= verifiedToken.exp * 1000) {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token expired'
+            });
+        }
+
+        // Create new tokens (implement rotation)
+        const newAccessToken = await createAccessToken({ user: verifiedToken.user }, process.env.JWT_EXPIRES);
+
+        const newRefreshToken = await createRefreshToken({ user: verifiedToken.user }, process.env.REFRESH_TOKEN_EXPIRES || '14d');
+
+        // Set new refresh token cookie
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 14 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            success: true,
+            access_token: newAccessToken
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Token refresh failed'
+        });
+    }
+};
 
 const forgotPassword = async (req, res) => {
     const { error, value } = Joi.object({
@@ -299,4 +364,5 @@ module.exports = {
     requestVerification,
     forgotPassword,
     resetPassword,
+    refreshAccessToken
 };

@@ -1,15 +1,14 @@
 const express = require('express');
-const { register, login, verifyAccount, requestVerification, forgotPassword, resetPassword } = require("../src/controllers/authenticationController");
-
+const {register, login, verifyAccount, requestVerification, forgotPassword, resetPassword, refreshAccessToken} = require("../src/controllers/authenticationController");
 const router = express.Router();
 
 router.post('/register', register);
-router.post('/login', login)
-router.post('/logout')
-router.post('/verify-account/:token', verifyAccount)
-router.post('/request-verification/:token', requestVerification)
-router.post('/forget-password', forgotPassword)
-router.post('/reset-password', resetPassword)
+router.post('/login', login);
+router.post('/verify/:token', verifyAccount);
+router.get('/verify/request/:token', requestVerification);
+router.post('/password/forgot', forgotPassword);
+router.post('/password/reset', resetPassword);
 
+router.post('/refresh-token', refreshAccessToken);
 
 module.exports = router;

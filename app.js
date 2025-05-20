@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const PORT = process.env.PORT || 3000;
 const connection = require('./config/database');
 
@@ -14,12 +15,13 @@ const discountRoutes = require('./routes/discount');
 const messageRoutes = require('./routes/message');
 
 const authentication = require('./src/middlewares/authentication')
-const {userAuthorization, adminAuthorization} = require("./src/middlewares/authorization");
+const { userAuthorization, adminAuthorization } = require("./src/middlewares/authorization");
 
 const app = express();
 connection();
 
 app.use(cors());
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

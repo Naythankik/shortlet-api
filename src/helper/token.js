@@ -23,7 +23,13 @@ const createAccessToken = (payload, duration) => {
     });
 }
 
-const verifyAccessToken = (token) => {
+const createRefreshToken = (payload, duration) => {
+    return jwt.sign(payload, JWT_SECRET, {
+        expiresIn: duration
+    });
+}
+
+const verifyToken = (token) => {
     return jwt.verify(token, JWT_SECRET);
 }
 
@@ -31,5 +37,6 @@ module.exports = {
     generateOTP,
     generateToken,
     createAccessToken,
-    verifyAccessToken,
+    verifyToken,
+    createRefreshToken
 };

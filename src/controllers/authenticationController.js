@@ -276,7 +276,7 @@ const refreshAccessToken = async (req, res) => {
 const forgotPassword = async (req, res) => {
     const { error, value } = Joi.object({
         'email': Joi.string().email().required(),
-    }).validate(req.body, { abortEarly: false});
+    }).validate(req.body, { abortEarly: false });
 
     if (error) {
         return res.status(422).json({ message: error.details.map(err => err.message) });
@@ -288,10 +288,16 @@ const forgotPassword = async (req, res) => {
         const user = await User.findOne({email});
 
         if(!user) {
-            return res.status(404).send({message: "No user found!!"})
+            return res.status(404).send({
+                message: 'No user found!!'
+            });
         }
 
-        const checkRequest = await Token.findOne({user});
+        const checkRequest = await Token.findOne({
+            user,
+            type: 'password-reset',
+        });
+
         if(checkRequest){
             if((Date.now() - checkRequest.createdAt) <= 300000) {
                 return res.status(429).send({message: "Too many request.......Wait some time before making another request."})
@@ -302,9 +308,13 @@ const forgotPassword = async (req, res) => {
 
         try {
             const token = await Token.create({
+                otp: await generateOTP(),
                 token: generateToken(),
+                type: 'password-reset',
+                userAgent: req.get('User-Agent'),
+                ip: req.ip,
                 user: user._id,
-                expiresIn: Date.now() + 20 * 60 * 1000
+                expiresIn: Date.now() + 20 * 60 * 1000 // 20 mins
             });
 
             const subject = 'Forget Password'
@@ -332,8 +342,16 @@ const forgotPassword = async (req, res) => {
 }
 
 const resetPassword = async (req, res) => {
+    const token = req.params.token;
+    if (!token) {
+        return res.status(400).json({
+            success: false,
+            message: "Reset token is required"
+        });
+    }
+
+
     const { error, value } = Joi.object({
-        'token': Joi.string().required(),
         'password': Joi.string().required(),
         'confirmPassword': Joi.string().valid(Joi.ref('password')).required(),
     }).validate(req.body, { abortEarly: false});
@@ -342,23 +360,50 @@ const resetPassword = async (req, res) => {
         return res.status(422).json({ message: error.details.map(err => err.message) });
     }
 
-    const { token, password } = value;
+    const password = value.password;
 
     try{
-        const userToken = await Token.findOne({token}).populate("user");
+        const userToken = await Token.findOne({
+            token,
+            type: 'reset-token',
+            isValid: true
+        }).populate("user");
 
-        if(!userToken) {
-            return res.status(404).json({message: "Invalid token"});
+        if (!userToken) {
+            return res.status(404).json({
+                success: false,
+                message: "Invalid or expired reset token"
+            });
+        }
+        if (Date.now() > userToken.expiresIn) {
+            return res.status(498).json({
+                success: false,
+                message: "Reset token has expired. Please request a new one."
+            });
         }
 
-        if(Date.now() > userToken.expiresIn) {
-            return res.status(498).json({message: "Token has expired.......Request for new token"})
+        const isSamePassword = await userToken.user.comparePassword(value.password);
+        if (isSamePassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password cannot be the same as old password"
+            });
         }
+
 
         userToken.user.password = password;
         await userToken.user.save();
 
-        await userToken.deleteOne();
+        await Token.updateMany(
+            {
+                user: userToken.user._id,
+                type: 'reset-token'
+            },
+            {
+                isValid: false
+            }
+        );
+
     }catch (e){
         return res.status(500).json({message: e.message});
     }

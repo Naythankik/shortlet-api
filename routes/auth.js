@@ -7,7 +7,7 @@ router.post('/login', login);
 router.post('/verify/:token', verifyAccount);
 router.post('/verify/request/:token', requestVerification);
 router.post('/password/forgot', forgotPassword);
-router.post('/password/reset', resetPassword);
+router.post('/password/reset/:token', resetPassword);
 
 router.post('/refresh-token', refreshAccessToken);
 

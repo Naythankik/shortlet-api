@@ -1,56 +1,75 @@
-const {verifyAccessToken, createAccessToken} = require("../helper/token");
+const { verifyToken, createAccessToken } = require("../helper/token");
 const User = require("../models/user");
 
 const authentication = async (req, res, next) => {
-    const {
-        headers: { authorization },
-    } = req;
-
-    if (!authorization || !authorization.startsWith("Bearer ")) {
-        return res.status(400).send({ message: "Unauthorized request: No Bearer token" });
-    }
-
-    const token = authorization.substring(7);
-
     try {
-        const { email, id, exp } = await verifyAccessToken(token);
+        const { authorization, cookie } = req.headers;
 
-        const user = await User.findOne({email});
+        //Check if the request header has an authorization and a cookie token
+        if (!authorization || !authorization.startsWith("Bearer ") || !cookie || !cookie.includes("refreshToken")) {
+            return res.status(401).json({
+                success: false,
+                message: "Access denied. No token provided"
+            });
+        }
 
-        if(!user) {
-            return res.status(404).json({ message: "User is not found" });
+        const token = authorization.split(' ')[1];
+
+        const { user: { email, id }, exp } = await verifyToken(token);
+
+        const user = await User.findOne({
+            email,
+            _id: id,
+            isActive: true
+        }).select('-password');
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Access denied. User not found or inactive"
+            });
         }
 
         const now = Date.now().valueOf() / 1000;
-
-        if (exp < now) {
-            return res.status(401).send({ message: "Token expired, please login again" });
-        }
-
         const gracePeriod = 5 * 60;
+
         if (exp - now <= gracePeriod) {
-            const newToken = await createAccessToken({ email, id }, "2h");
+            const newToken = await createAccessToken({ email, id }, "1h");
 
             res.cookie("token", newToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: "Strict",
+                maxAge: 60 * 60 * 1000,
+                path: '/' // Adjust based on your API path
             });
         }
 
-        req.auth ={
+        req.user = {
             email,
-            id
+            id,
+            role: user.role
         }
         return next();
     } catch (err) {
         if (err.name === "TokenExpiredError") {
-            return res.status(401).send({ message: "Token expired, please login again" });
-        } else if (err.name === "JsonWebTokenError") {
-            return res.status(400).send({ message: "Invalid token, please login again" });
+            return res.status(401).json({
+                success: false,
+                message: "Access denied. Token has expired"
+            });
         }
 
-        return res.status(500).send({ message: "Internal server error", error: err.message });
+        if (err.name === "JsonWebTokenError") {
+            return res.status(401).json({
+                success: false,
+                message: "Access denied. Invalid token"
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error during authentication"
+        });
     }
 };
 

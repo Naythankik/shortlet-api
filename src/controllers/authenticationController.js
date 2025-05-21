@@ -102,13 +102,13 @@ const login = async (req, res) => {
 
         const refreshToken = await createRefreshToken({
             user: { email: user.email, id: user._id }
-        }, process.env.REFRESH_TOKEN_EXPIRES || '14d');
+        }, process.env.REFRESH_TOKEN_EXPIRES || '1d');
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+            maxAge: 24 * 60 * 60 * 1000
         });
 
 
@@ -233,7 +233,7 @@ const refreshAccessToken = async (req, res) => {
     if (!refreshToken) {
         return res.status(401).json({
             success: false,
-            message: 'Refresh token required'
+            message: 'Access Denied. No refresh token provided'
         });
     }
 
@@ -250,14 +250,14 @@ const refreshAccessToken = async (req, res) => {
         // Create new tokens (implement rotation)
         const newAccessToken = await createAccessToken({ user: verifiedToken.user }, process.env.JWT_EXPIRES);
 
-        const newRefreshToken = await createRefreshToken({ user: verifiedToken.user }, process.env.REFRESH_TOKEN_EXPIRES || '14d');
+        const newRefreshToken = await createRefreshToken({ user: verifiedToken.user }, process.env.REFRESH_TOKEN_EXPIRES || '1d');
 
         // Set new refresh token cookie
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 14 * 24 * 60 * 60 * 1000
+            maxAge: 24 * 60 * 60 * 1000
         });
 
         return res.status(200).json({

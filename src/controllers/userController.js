@@ -1,10 +1,10 @@
 const errorHandler = require("../helper/error-handlers");
 const User = require("../models/user");
 const userResource = require('../resources/userResource')
-const {updateRequest} = require("../requests/userRequest");
+const { updateRequest } = require("../requests/userRequest");
 
 const readProfile = async (req, res) => {
-    const { id } = req.auth
+    const { id } = req.user
     try{
         const user = await User.findById(id);
 

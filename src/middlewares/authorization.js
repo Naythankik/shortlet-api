@@ -1,31 +1,37 @@
-const User = require("../models/user");
 const errorHandler = require('../helper/error-handlers');
 
-const adminAuthorization = async (req, res, next) => {
-    const { email } = req.auth;
-    const admin = await User.findOne({ email });
-    if (!admin) {
-        return res.status(401).json(errorHandler({ message: "Admin not found" }));
-    }
-
-    if(admin.role !== "admin") {
-        return res.status(403).json(errorHandler({ message: "Invalid role" }));
-    }
-    next()
+const ROLES = {
+    ADMIN: 'admin',
+    USER: 'user'
 };
 
-const userAuthorization = async (req, res, next) => {
-    const { email } = req.auth;
-    const user = await User.findOne({ email });
-    if (!user) {
-        return res.status(401).json(errorHandler({ message: "Invalid user" }));
-    }
+// Base authorization middleware
+const authorize = async (req, res, next, requiredRole) => {
+    try {
+        const { role } = req.user;
 
-    if(user.role !== "user") {
-        return res.status(403).send(errorHandler({ message: "Invalid role" }));
+        if (role !== requiredRole) {
+            return res.status(500).json(errorHandler({
+                message: `Access denied. You don't have the required role: ${requiredRole}`
+            }));
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json(errorHandler({
+            message: "Internal server error during authorization",
+            statusCode: 500,
+            error
+        }));
     }
-    next()
-}
+};
+
+// Role-specific middleware
+const adminAuthorization = (req, res, next) =>
+    authorize(req, res, next, ROLES.ADMIN);
+
+const userAuthorization = (req, res, next) =>
+    authorize(req, res, next, ROLES.USER);
 
 const ownerAuthorization = async (req, res, next) => {
     const { email } = req.auth;

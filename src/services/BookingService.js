@@ -119,7 +119,7 @@ class BookingService {
     }
 
     async readAllBooking (req, res) {
-        const { id } = req.auth;
+        const { id } = req.user;
         const { page = 1, limit = 15, date } = req.query;
         const skip = (page - 1) * limit;
         let query= {user: id};
@@ -131,7 +131,7 @@ class BookingService {
         try{
             const booking = await Booking.find(query)
                 .select('-user')
-                .populate("apartment", 'name description location images adress')
+                .populate("apartment", 'name description location images address')
                 .skip(skip)
                 .limit(limit);
 

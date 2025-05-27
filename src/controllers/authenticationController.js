@@ -45,7 +45,7 @@ const register = async (req, res) => {
                     warning,
                     token.otp,
                     token.token,
-                    'account/verification'
+                    'verify-email'
                 ));
             }catch (e){
                 console.error(e)
@@ -61,7 +61,7 @@ const register = async (req, res) => {
         })
     } catch (err) {
         console.error(error);
-        return res.status(500).send({
+        return res.status(500).json({
             message: err.message,
         });
     }
@@ -111,10 +111,9 @@ const login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000
         });
 
-
-        return res.status(200).send({
+        return res.status(200).json({
             access_token : accessToken,
-            admin: userResource(user)
+            user: userResource(user)
         });
     }catch (error) {
         return res.status(500).json({
@@ -144,11 +143,11 @@ const verifyAccount = async (req, res) => {
         }
 
         if(userToken.otp !== value.otp){
-            return res.status(401).send({message: "OTP is invalid"})
+            return res.status(401).json({message: "OTP is invalid"})
         }
 
         if(userToken.expiresIn <= Date.now()) {
-            return res.status(498).send({
+            return res.status(498).json({
                 message: "Token expired"
             })
         }
@@ -159,9 +158,9 @@ const verifyAccount = async (req, res) => {
         await userToken.save();
         await userToken.user.save();
 
-        return res.status(200).send({ message: "User verified successfully" });
+        return res.status(200).json({ message: "User verified successfully" });
     } catch (err) {
-        return res.status(500).send({
+        return res.status(500).json({
             message: err.message,
         });
     }
@@ -219,9 +218,9 @@ const requestVerification = async (req, res) => {
             return res.status(422).json({ message: e.message });
         }
 
-        return res.status(200).send({message: "Re-Verification has been sent to the provided email"})
+        return res.status(200).json({message: "Re-Verification has been sent to the provided email"})
     }catch(err){
-        return res.status(500).send({error: err.message})
+        return res.status(500).json({error: err.message})
     }
 }
 
@@ -288,7 +287,7 @@ const forgotPassword = async (req, res) => {
         const user = await User.findOne({email});
 
         if(!user) {
-            return res.status(404).send({
+            return res.status(404).json({
                 message: 'No user found!!'
             });
         }
@@ -300,7 +299,7 @@ const forgotPassword = async (req, res) => {
 
         if(checkRequest){
             if((Date.now() - checkRequest.createdAt) <= 300000) {
-                return res.status(429).send({message: "Too many request.......Wait some time before making another request."})
+                return res.status(429).json({message: "Too many request.......Wait some time before making another request."})
             }
 
             await checkRequest.deleteOne();
@@ -334,10 +333,10 @@ const forgotPassword = async (req, res) => {
             console.error(e)
             return res.status(422).json({ message: e.message });
         }
-        return res.status(200).send({message: "A password reset link has been sent to the provided email"})
+        return res.status(200).json({message: "A password reset link has been sent to the provided email"})
     }catch (err){
         console.error(e)
-        return res.status(500).send({error: err.message})
+        return res.status(500).json({error: err.message})
     }
 }
 

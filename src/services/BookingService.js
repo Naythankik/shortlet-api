@@ -6,7 +6,7 @@ const bookingResource = require("../resources/bookingResource");
 
 class BookingService {
     async createBooking  (req, res) {
-        const { id } = req.auth;
+        const { id } = req.user;
         const { apartmentId } = req.params;
 
         const { error, value } = createRequest(req.body);
@@ -36,6 +36,7 @@ class BookingService {
 
             return res.status(201).json({
                 booking: bookingResource(booking),
+                status: 201
             });
         }catch(err){
             console.error(err);
@@ -94,7 +95,7 @@ class BookingService {
     }
 
     async readABooking (req, res) {
-        const { id } = req.auth;
+        const { id } = req.user;
         const { bookingId } = req.params;
 
         try{

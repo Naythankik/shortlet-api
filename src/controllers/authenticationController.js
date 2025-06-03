@@ -106,8 +106,8 @@ const login = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            // secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000
         });
 
@@ -307,7 +307,6 @@ const forgotPassword = async (req, res) => {
 
         try {
             const token = await Token.create({
-                otp: await generateOTP(),
                 token: generateToken(),
                 type: 'password-reset',
                 userAgent: req.get('User-Agent'),
@@ -327,7 +326,7 @@ const forgotPassword = async (req, res) => {
                 warning,
                 null,
                 token.token,
-                'forget-password',
+                'reset-password',
             ));
         }catch (e){
             console.error(e)
@@ -342,13 +341,13 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     const token = req.params.token;
+
     if (!token) {
         return res.status(400).json({
             success: false,
             message: "Reset token is required"
         });
     }
-
 
     const { error, value } = Joi.object({
         'password': Joi.string().required(),
@@ -364,7 +363,7 @@ const resetPassword = async (req, res) => {
     try{
         const userToken = await Token.findOne({
             token,
-            type: 'reset-token',
+            type: 'password-reset',
             isValid: true
         }).populate("user");
 
@@ -396,7 +395,7 @@ const resetPassword = async (req, res) => {
         await Token.updateMany(
             {
                 user: userToken.user._id,
-                type: 'reset-token'
+                type: 'password-reset'
             },
             {
                 isValid: false

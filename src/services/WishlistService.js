@@ -22,6 +22,7 @@ class WishlistService {
 
              const wishlist = await Wishlist.create({
                  name: value.name,
+                 description: value.description,
                  user: req.user.id,
              });
              return res.status(201).json({
@@ -36,7 +37,7 @@ class WishlistService {
     async readAllWishlist(req, res){
         try{
             const wishlists = await Wishlist.find({user: req.user.id})
-                .select('name apartments')
+                .select('name apartments description')
                 .populate('apartments', 'name')
 
             return res.status(200).json({
@@ -55,7 +56,7 @@ class WishlistService {
                 _id: req.params.wishlistId
             })
                 .select('name apartments')
-                .populate('apartments', 'name description location images');
+                .populate('apartments', 'name description location images price');
 
             if (!wishlist) {
                 return res.status(404).json({ message: 'Wishlist not found' });
@@ -77,6 +78,7 @@ class WishlistService {
             if(error){
                 if(error) return res.status(400).json({ message: error.details.map(err => err.message) });
             }
+
             // Check if no document has the name passed by the user
             const existingWishlist = await Wishlist.findOne({
                 user: req.user.id,
@@ -88,7 +90,11 @@ class WishlistService {
 
             const wishlist = await Wishlist.findOneAndUpdate(
                 { user: req.user.id, _id: req.params.wishlistId },
-                { name: value.name }
+                {
+
+                    name: value.name,
+                    description: value.description
+                }
             );
 
             if (!wishlist) {

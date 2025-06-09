@@ -35,7 +35,7 @@ const seederBookings = async () => {
 };
 
 const seederApartments = async () => {
-    const apartments = await apartmentFactory(70);
+    const apartments = await apartmentFactory(100);
     try {
         await Apartment.insertMany(apartments);
         console.log('Apartment seeded successfully');
@@ -45,14 +45,17 @@ const seederApartments = async () => {
     }
 };
 
-const updateUserSeeders = async () => {
+const updateApartmentReviewSeeders = async () => {
     try {
         const reviews = await Review.find();
 
         for (const review of reviews) {
-            await Apartment.findByIdAndUpdate(review.apartment, {
-                $push: {reviews: review._id}
-            });
+            await Apartment.findOneAndUpdate({ _id: review.apartment}, {
+                $addToSet: {
+                    reviews: review._id,
+                }
+            }, { new: true});
+
         }
     } catch (err) {
         console.error('Error updating users with apartments:', err);
@@ -77,9 +80,9 @@ const runSeeders = async () => {
     try {
         // await seederUsers();
         // await seederApartments()
-        // await seederBookings()
-        // await seederReviews()
-        await updateUserSeeders()
+        await seederBookings()
+        await seederReviews()
+        await updateApartmentReviewSeeders()
         console.log('All seeders completed successfully!');
         process.exit(0);
     } catch (err) {

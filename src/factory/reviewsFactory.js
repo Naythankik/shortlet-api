@@ -17,8 +17,8 @@ const review = async () => {
         comment: faker.lorem.paragraph(),
         rating: faker.number.int({min: 1, max: 5}),
         relevant: {
-            yes: faker.number.int(),
-            no: faker.number.int()
+            yes: faker.number.int({min: 1, max: 100}),
+            no: faker.number.int({min: 1, max: 100})
         },
         createdAt: faker.date.past(),
         updatedAt: faker.date.past()

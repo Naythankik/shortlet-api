@@ -1,5 +1,43 @@
 const { faker } = require('@faker-js/faker')
 
+const allTags = [
+    "wifi",
+    "air-conditioning",
+    "swimming-pool",
+    "generator",
+    "security",
+    "kitchen",
+    "washing-machine",
+    "smart-tv",
+    "balcony",
+    "gym",
+
+    "lekki",
+    "victoria-island",
+    "ikeja",
+    "abuja",
+    "lagos-island",
+    "port-harcourt",
+
+    "luxury",
+    "budget",
+    "family-friendly",
+    "studio-apartment",
+    "2-bedroom",
+    "duplex",
+    "penthouse",
+    "bachelor-pad",
+
+    "sea-view",
+    "city-view",
+    "quiet-neighborhood",
+    "party-friendly",
+    "long-stay",
+    "short-stay",
+    "remote-work-ready",
+    "romantic"
+];
+
 const apartment = async () => {
     return {
         name: faker.company.name(),
@@ -18,13 +56,16 @@ const apartment = async () => {
             ]
         },
         price: faker.finance.amount({min:20, max:5000}),
+        tags: faker.helpers.multiple(() => {
+            return faker.helpers.arrayElement(allTags)
+        }),
         discount: {
             percentage: faker.number.float({min:3, max:35, fractionDigits: 2}),
             startDate: Date.now(),
             endDate: faker.date.soon()
         },
         images: faker.helpers.multiple(() => {
-            return faker.image.urlLoremFlickr()
+            return faker.image.urlPicsumPhotos()
         }),
         properties: faker.helpers.multiple(() => {
             return faker.commerce.productMaterial()

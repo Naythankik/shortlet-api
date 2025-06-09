@@ -69,6 +69,10 @@ const ApartmentSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    tags: [{
+        type: String,
+        required: false
+    }],
     price: {
         type: Number,
         required: true
@@ -79,7 +83,6 @@ const ApartmentSchema = new mongoose.Schema({
     }],
 }, { timestamps: true });
 
-ApartmentSchema.index({ ownerId: 1 });
-
+ApartmentSchema.index({ "address.city": 1, price: 1 });
 
 module.exports = mongoose.model("Apartment", ApartmentSchema);

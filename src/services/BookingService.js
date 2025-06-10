@@ -18,9 +18,22 @@ class BookingService {
             if(!apartment){
                 return res.status(404).json(errorHandler({ message: 'not found'}));
             }
+
             if(!apartment.isAvailable){
                 return res.status(400).json(errorHandler({
                     message: `Apartment is not available now, It\'ll be available from ${apartment.availability.startDate} to ${apartment.availability.endDate}`
+                }));
+            }
+
+            const checkLastBooking = await Booking.findOne({
+                apartment: apartmentId,
+                user: id,
+            });
+
+            // Check if the user has booked the apartment in the last 24 hours
+            if (checkLastBooking && (Date.now() - Date.parse(checkLastBooking.createdAt) < 86400000)) {
+                return res.status(400).json(errorHandler({
+                    message: 'Apartment has already been booked by you in the last 24 hours'
                 }));
             }
 
@@ -46,7 +59,7 @@ class BookingService {
     }
 
     async updateBooking  (req, res) {
-        const { id } = req.auth;
+        const { id } = req.user;
         const { bookingId } = req.params;
 
         const { error, value } = updateRequest(req.body);
@@ -60,19 +73,19 @@ class BookingService {
                 return res.status(404).json(errorHandler({ message: 'not found'}));
             }
 
-            if(booking.bookingStatus !== 'booked'){
-                return res.status(400).json({ message: 'Booking not available cause it has been completed or cancelled' });
-            }
-
             if(booking.user.toString() !== id){
                 return res.status(422).json({message: 'Invalid request'})
+            }
+
+            if(booking.bookingStatus !== 'booked'){
+                return res.status(400).json({ message: 'Booking not available cause it has been completed or cancelled' });
             }
 
             const startDate = value.checkInDate ?? booking.startDate;
             const endDate = value.checkOutDate ?? booking.endDate;
 
             if(startDate && endDate){
-                const apartment = await Apartment.findOne({apartment: bookingId.apartment })
+                const apartment = await Apartment.findById(booking.apartment)
 
                 if(!this.checkAvailability(apartment, startDate, endDate)){
                     return res.status(400).json({ message: 'Apartment is not available for the specified date selected' });
@@ -81,7 +94,7 @@ class BookingService {
             }
             const payload = {...value}
 
-            await booking.updateOne(payload);
+            await booking.updateOne(payload,{ new: true});
 
             return res.status(201).json({
                 message: "Booking updated successfully",
@@ -123,10 +136,10 @@ class BookingService {
         const { id } = req.user;
         const { page = 1, limit = 15, date } = req.query;
         const skip = (page - 1) * limit;
-        let query= {user: id};
+        let query= { user: id };
 
         if(date){
-            query.createdAt = { $gte: date };
+            query.createdAt = { $gte: date.replaceAll('-', '/') };
         }
 
         try{
@@ -135,14 +148,15 @@ class BookingService {
                 .populate("apartment", 'name description location images address')
                 .skip(skip)
                 .limit(limit);
-
-            if(!booking){
-                return res.status(404).json(errorHandler({ message: 'not found'}));
-            }
+            const countDocument = await Booking.find(query).countDocuments();
 
             return res.status(200).json({
-                booking: booking ? bookingResource(booking) : booking
-            })
+                booking: booking ? bookingResource(booking) : booking,
+                meta: {
+                    page,
+                    limit,
+                    total: countDocument
+                }})
         }catch(err){
             console.error(err);
             return res.status(500).send({message: err.message});
@@ -153,9 +167,12 @@ class BookingService {
         const { bookingId } = req.params;
 
         try{
-            const booking = await Booking.findByIdAndUpdate(bookingId, {
+            const booking = await Booking.findOneAndUpdate({
+                _id: bookingId,
+                user: req.user.id
+            }, {
                 bookingStatus: 'cancelled'
-            })
+            },{new: true})
 
             if(!booking){
                 return res.status(404).json(errorHandler({ message: 'not found'}));
@@ -168,7 +185,6 @@ class BookingService {
         }
     }
 
-
     calculatePrice(apartment, checkInDate, checkOutDate) {
         const nights = (new Date(checkOutDate) - new Date(checkInDate)) / 86400000;
         let price = nights * apartment.price;
@@ -179,17 +195,17 @@ class BookingService {
 
             //The discount is independent of the nights, the percentage value is removed from the total amounts
             if (now >= new Date(startDate) && now <= new Date(endDate)) {
-                price -= (percentage / 100) * apartment.price;
+                price -= (percentage / 100) * price;
             }
         }
         return Math.round(price);
     }
 
     checkAvailability(apartment, checkInDate, checkOutDate) {
-        console.log(apartment)
         const { startDate, endDate } = apartment.availability;
 
-        return startDate <= checkInDate && endDate >= checkOutDate
+        return new Date(startDate) <= new Date(checkInDate) &&
+            new Date(endDate) >= new Date(checkOutDate);
     }
 }
 

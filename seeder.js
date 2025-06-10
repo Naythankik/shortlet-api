@@ -81,8 +81,8 @@ const runSeeders = async () => {
         // await seederUsers();
         // await seederApartments()
         await seederBookings()
-        await seederReviews()
-        await updateApartmentReviewSeeders()
+        // await seederReviews()
+        // await updateApartmentReviewSeeders()
         console.log('All seeders completed successfully!');
         process.exit(0);
     } catch (err) {

@@ -8,6 +8,8 @@ const connection = require('./config/database');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const apartmentRoutes = require('./routes/apartment');
+const paymentRoutes = require('./routes/payment');
+const webhookRoutes = require('./routes/webhook');
 const bookingRoutes = require('./routes/booking');
 const adminRoutes = require('./routes/admin');
 const wishlistRoutes = require('./routes/wishlist');
@@ -19,6 +21,11 @@ const { userAuthorization, adminAuthorization } = require("./src/middlewares/aut
 
 const app = express();
 connection();
+
+
+// Passing this cause the json() middleware interrupts the webhook request.
+app.use('/api/v1/shortlet-api/webhook', webhookRoutes)
+
 
 app.use(helmet());
 app.use(cors({
@@ -36,6 +43,7 @@ app.use('/api/v1/shortlet-api/auth', authRoutes)
 app.use('/api/v1/shortlet-api/user', authentication, userAuthorization, userRoutes)
 app.use('/api/v1/shortlet-api/apartments', authentication, apartmentRoutes)
 app.use('/api/v1/shortlet-api/bookings', authentication, bookingRoutes)
+app.use('/api/v1/shortlet-api/payments', authentication, paymentRoutes)
 app.use('/api/v1/shortlet-api/admin',authentication, adminAuthorization, adminRoutes)
 app.use('/api/v1/shortlet-api/wishlists', authentication, wishlistRoutes)
 app.use('/api/v1/shortlet-api/discounts', discountRoutes)

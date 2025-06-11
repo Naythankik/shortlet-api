@@ -1,6 +1,5 @@
 const Stripe = require("stripe");
 const {createPayment} = require("../requests/paymentRequest");
-const {generateToken} = require("../helper/token");
 const Booking = require("../models/bookings");
 require("dotenv").config();
 const stripe = Stripe(process.env.STRIPE_KEY);
@@ -11,7 +10,7 @@ const createCheckoutSession = async (req, res) => {
     const verifyBooking = await Booking.findOne({
         _id: bookingId,
         user: id
-    });
+    }).populate('apartment', '_id name');
 
     if(!verifyBooking) {
         return res.status(400).json({message: "Booking not found"});
@@ -49,8 +48,8 @@ const createCheckoutSession = async (req, res) => {
                 user: id,
                 booking: bookingId,
             },
-            success_url: `${process.env.HOSTED_URL}/payment/${generateToken()}/success`,
-            cancel_url: `${process.env.HOSTED_URL}/payment/${generateToken()}/cancel`,
+            success_url: `${process.env.HOSTED_URL}/apartment/${verifyBooking.apartment._id}?success`,
+            cancel_url: `${process.env.HOSTED_URL}/apartment/${verifyBooking.apartment._id}?cancel`,
         });
 
         res.status(200).json({
@@ -59,6 +58,7 @@ const createCheckoutSession = async (req, res) => {
             url: session.url
         });
     } catch (error) {
+        console.log(error)
         if(error.statusCode === 400){
             return res.status(400).json({message: error.message});
         }

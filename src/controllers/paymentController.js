@@ -55,6 +55,7 @@ const createCheckoutSession = async (req, res) => {
 
         res.status(200).json({
             message: 'Payment has been processed successfully',
+            id: session.id,
             url: session.url
         });
     } catch (error) {

@@ -3,10 +3,11 @@ const Apartment = require("../models/apartment");
 const errorHandler = require("../helper/error-handlers");
 const Booking = require("../models/bookings");
 const bookingResource = require("../resources/bookingResource");
+const {createCheckoutSession} = require("../controllers/paymentController");
 
 class BookingService {
     async createBooking  (req, res) {
-        const { id } = req.user;
+        const { id, email } = req.user;
         const { apartmentId } = req.params;
 
         const { error, value } = createRequest(req.body);
@@ -42,18 +43,24 @@ class BookingService {
             const payload = {
                 apartment: apartmentId,
                 user: id,
-                totalPrice,
+                amount: totalPrice,
                 ...value
             }
-            const booking = await Booking.create(payload);
 
-            return res.status(201).json({
-                booking: bookingResource(booking),
+            const { data, status, message } = await createCheckoutSession(email, payload);
+
+            return status === 400 ?
+                res.status(status).json({
+                    message,
+                    status
+                })
+                : res.status(201).json({
+                data,
                 status: 201
             });
         }catch(err){
-            console.error(err);
-            res.status(500).send({message: err.message});
+            console.log(err)
+            res.status(500).json(errorHandler({ message: err.message, status: err.status }));
         }
 
     }

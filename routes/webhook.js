@@ -20,39 +20,43 @@ router.post('/', express.raw({ type: 'application/json' }), async (request, resp
         return;
     }
 
-    console.log(event.type, event.data.object.id)
+    try {
+        switch (event.type) {
+            case 'checkout.session.completed':
+                const session = event.data.object;
 
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        try{
-            const booking = await Booking.create({
-                user: session.metadata.user,
-                apartment: session.metadata.apartment,
-                checkInDate: session.metadata.checkInDate,
-                checkOutDate: session.metadata.checkOutDate,
-                guests: session.metadata.guests,
-                totalPrice: session.metadata.amount,
-                paymentStatus: 'paid',
-                specialRequests: session.metadata.specialRequests,
-            })
+                await Payment.create({
+                    sessionId: session.id,
+                    user: session.metadata.user,
+                    booking: session.metadata.booking,
+                    currency: session.currency,
+                    paymentStatus: session.payment_status,
+                    amountTotal: session.amount_total,
+                    paymentMethod: session.payment_method_types[0],
+                })
 
-            await Payment.create({
-                sessionId: session.id,
-                user: session.metadata.user,
-                booking: booking._id,
-                currency: session.currency,
-                paymentStatus: session.payment_status,
-                amountTotal: session.amount_total,
-                paymentMethod: session.payment_method_types[0],
-            })
+                await Booking.findByIdAndUpdate(session.metadata.booking, {
+                    paymentStatus: session.payment_status,
+                    bookingStatus: 'confirmed'
+                });
+                break
+            case 'payment_intent.payment_failed':
+                const failedIntent = event.data.object;
+                const bookingId = failedIntent.metadata?.booking;
 
-            console.log('Payment saved to DB.');
-        } catch (dbErr) {
-            console.error('❌ Failed to save payment:', dbErr.message);
+                if (bookingId) {
+                    await Booking.findByIdAndUpdate(bookingId, {
+                        paymentStatus: 'failed',
+                    });
+                    console.log(`Payment failed for booking ${bookingId}`);
+                }
+                break;
+            default:
+                console.log(`Unhandled event type ${event.type}`);
         }
+    }catch (error) {
+            console.error('Failed to save payment:', error.message);
     }
-
-
     response.status(200).end();
 })
 

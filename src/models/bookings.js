@@ -30,7 +30,7 @@ const bookingSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'failed'],
+        enum: ['pending', 'paid', 'failed', 'refunded', 'expired'],
         default: 'pending',
     },
     specialRequests: {
@@ -38,9 +38,17 @@ const bookingSchema = new mongoose.Schema({
     },
     bookingStatus: {
         type: String,
-        enum: ['booked', 'cancelled', 'completed'],
+        enum: [
+            'booked',       // Booking has been created but not yet confirmed
+            'confirmed',    // Booking has been reviewed and accepted by host/admin
+            'cancelled',    // Booking was canceled by guest or host
+            'checked_in',   // Guest has arrived and checked into the apartment
+            'checked_out',  // Guest has checked out of the apartment
+            'no_show',      // Guest did not show up for the booking
+            'completed'     // Booking has been successfully completed (stay ended)
+        ],
         default: 'booked',
-    },
+    }
 }, {
     timestamps: true,
 });

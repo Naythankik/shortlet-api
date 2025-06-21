@@ -10,6 +10,7 @@ const userRoutes = require('./routes/user');
 const apartmentRoutes = require('./routes/apartment');
 const webhookRoutes = require('./routes/webhook');
 const bookingRoutes = require('./routes/booking');
+const paymentRoutes = require('./routes/payment');
 const adminRoutes = require('./routes/admin');
 const wishlistRoutes = require('./routes/wishlist');
 const discountRoutes = require('./routes/discount');
@@ -42,6 +43,9 @@ app.use('/api/v1/shortlet-api/auth', authRoutes)
 app.use('/api/v1/shortlet-api/user', authentication, userAuthorization, userRoutes)
 app.use('/api/v1/shortlet-api/apartments', authentication, apartmentRoutes)
 app.use('/api/v1/shortlet-api/bookings', authentication, bookingRoutes)
+app.use('/api/v1/shortlet-api/payments', authentication, paymentRoutes)
+
+// Admin side of things
 app.use('/api/v1/shortlet-api/admin',authentication, adminAuthorization, adminRoutes)
 app.use('/api/v1/shortlet-api/wishlists', authentication, wishlistRoutes)
 app.use('/api/v1/shortlet-api/discounts', discountRoutes)

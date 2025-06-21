@@ -61,14 +61,6 @@ const ApartmentSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
-    availability: {
-        startDate: Date,
-        endDate: Date
-    },
-    isAvailable: {
-        type: Boolean,
-        default: true
-    },
     tags: [{
         type: String,
         required: false

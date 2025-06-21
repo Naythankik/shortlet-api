@@ -2,36 +2,93 @@ const Joi = require('joi');
 
 const createRequest = (data) => {
     return Joi.object({
-        checkInDate: Joi.date().required(),
-        checkOutDate: Joi.date()
+        checkInDate: Joi.date()
+            .greater('now')
             .required()
-            .greater(Joi.ref('checkInDate'))
             .messages({
-                'date.greater': 'Check-out date must be after check-in date'
+                'date.greater': 'Check-in date must be in the future',
+                'date.base': 'Check-in date must be a valid date',
+                'any.required': 'Check-in date is required'
             }),
-        description: Joi.string().required(),
-        currency: Joi.string().required(),
-        method: Joi.string().valid('card', 'alipay', 'klarna', 'afterpay_clearpay', 'us_bank_account', 'sepa_debit').required(),
-        guests: Joi.number().integer().min(1).required(),
+
+        checkOutDate: Joi.date()
+            .greater('now')
+            .greater(Joi.ref('checkInDate'))
+            .required()
+            .messages({
+                'date.greater': 'Check-out date must be after check-in date',
+                'date.base': 'Check-out date must be a valid date',
+                'any.required': 'Check-out date is required'
+            }),
+
+        guests: Joi.number()
+            .integer()
+            .min(1)
+            .required()
+            .messages({
+                'number.base': 'Guests must be a number',
+                'number.min': 'At least one guest is required',
+                'any.required': 'Number of guests is required'
+            }),
+
         specialRequests: Joi.string().optional()
     }).validate(data, { abortEarly: false });
 };
 
 const updateRequest = (data) => {
-    return Joi.object({
-        checkInDate: Joi.date().optional(),
-        checkOutDate: Joi.date()
+    const schema = Joi.object({
+        checkInDate: Joi.date()
+            .greater('now')
             .optional()
-            .greater(Joi.ref('checkInDate'))
             .messages({
-                'date.greater': 'Check-out date must be after check-in date'
+                'date.greater': 'Check-in date must be in the future',
+                'date.base': 'Check-in date must be a valid date'
             }),
-        guests: Joi.number().integer().min(1).optional(),
+
+        checkOutDate: Joi.date()
+            .greater('now')
+            .optional()
+            .messages({
+                'date.greater': 'Check-out date must be in the future',
+                'date.base': 'Check-out date must be a valid date'
+            }),
+
+        guests: Joi.number()
+            .integer()
+            .min(1)
+            .optional()
+            .messages({
+                'number.base': 'Guests must be a number',
+                'number.min': 'At least one guest is required'
+            }),
+
         specialRequests: Joi.string().optional()
-    }).validate(data, { abortEarly: false });
+    }).custom((value, helpers) => {
+        const { checkInDate, checkOutDate } = value;
+
+        if (checkInDate && checkOutDate && checkOutDate <= checkInDate) {
+            return helpers.error('any.invalid', {
+                message: 'Check-out date must be after check-in date'
+            });
+        }
+
+        return value;
+    }, 'Cross-field validation');
+
+    const result = schema.validate(data, { abortEarly: false });
+
+    if (result.error) {
+        result.error.details.forEach(err => {
+            if (err.type === 'any.invalid' && err.context?.message) {
+                err.message = err.context.message;
+            }
+        });
+    }
+
+    return result;
 };
 
 module.exports = {
     createRequest,
-    updateRequest,
-}
+    updateRequest
+};

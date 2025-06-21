@@ -1,9 +1,33 @@
 const Stripe = require("stripe");
 require("dotenv").config();
 const stripe = Stripe(process.env.STRIPE_KEY);
+const Booking = require("../models/bookings");
+const {createPayment} = require("../requests/paymentRequest");
 
-const createCheckoutSession = async (email, payload) => {
-    const { amount, currency, description, method, apartment } = payload;
+const createCheckoutSession = async (req, res) => {
+    const { bookingId } = req.params;
+    const { email, id } = req.user;
+    const { value, error } = createPayment(req.body || {});
+
+    if(error) {
+        return res.status(400).json({
+            message: error.details.map(err => err.message)
+        });
+    }
+    const booking = await Booking.findOne({
+        _id: bookingId,
+        user: id
+    });
+
+    if(!booking){
+        return res.status(400).send({ message: 'Booking not found' })
+    }
+
+    if(booking.paymentStatus === 'paid'){
+        return res.status(422).json({ message: 'Booking already paid' })
+    }
+
+    const { method, description, currency } = value;
 
     try {
         const session = await stripe.checkout.sessions.create({
@@ -13,11 +37,11 @@ const createCheckoutSession = async (email, payload) => {
             line_items: [
                 {
                     price_data: {
-                        currency: currency.toLowerCase() || 'usd',
+                        currency: (currency || 'usd').toLowerCase(),
                         product_data: {
                             name: description || 'Shortlet Booking',
                         },
-                        unit_amount: amount,
+                        unit_amount: booking.totalPrice,
                     },
                     quantity: 1,
                 },
@@ -28,25 +52,28 @@ const createCheckoutSession = async (email, payload) => {
                     description: description,
                 }
             },
-            metadata:{...payload},
-            success_url: `${process.env.HOSTED_URL}/apartment/${apartment}?success`,
-            cancel_url: `${process.env.HOSTED_URL}/apartment/${apartment}?cancel`,
+            metadata:{
+                user: id,
+                booking: bookingId,
+            },
+            success_url: `${process.env.HOSTED_URL}/apartment/${booking.apartment}?success`,
+            cancel_url: `${process.env.HOSTED_URL}/apartment/${booking.apartment}?cancel`,
         });
-        return {
+
+        return res.status(201).json({
             status: 200,
             message: 'Payment session created successfully',
             data: {
-                id: session.id,
+                paymentId: session.id,
                 url: session.url
             }
-        }
+        })
 
     } catch (error) {
-        return {
+        return res.status(500).json({
             status: error.statusCode,
             message: error.message,
-            data: null
-        }
+        })
     }
 }
 

@@ -1,4 +1,4 @@
-const wishListServices = require("../services/WishlistService");
+const wishListServices = require("../../services/WishlistService");
 
 module.exports = {
     create: wishListServices.createWishlist.bind(wishListServices),

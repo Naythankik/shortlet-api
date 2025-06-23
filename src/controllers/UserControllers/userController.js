@@ -1,7 +1,7 @@
-const errorHandler = require("../helper/error-handlers");
-const User = require("../models/user");
-const userResource = require('../resources/userResource')
-const { updateRequest } = require("../requests/userRequest");
+const errorHandler = require("../../helper/error-handlers");
+const User = require("../../models/user");
+const userResource = require('../../resources/userResource')
+const { updateRequest } = require("../../requests/userRequest");
 
 const readProfile = async (req, res) => {
     const { id } = req.user

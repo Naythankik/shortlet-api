@@ -1,8 +1,8 @@
 const Stripe = require("stripe");
 require("dotenv").config();
 const stripe = Stripe(process.env.STRIPE_KEY);
-const Booking = require("../models/bookings");
-const {createPayment} = require("../requests/paymentRequest");
+const Booking = require("../../models/bookings");
+const {createPayment} = require("../../requests/paymentRequest");
 
 const createCheckoutSession = async (req, res) => {
     const { bookingId } = req.params;

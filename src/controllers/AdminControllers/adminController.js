@@ -1,4 +1,4 @@
-const adminService = require("../services/AdminService");
+const adminService = require("../../services/AdminService");
 
 module.exports = {
     readUsers: adminService.readAllUsers.bind(adminService),

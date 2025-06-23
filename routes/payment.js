@@ -1,5 +1,5 @@
 const express = require('express');
-const {createCheckoutSession} = require("../src/controllers/paymentController");
+const {createCheckoutSession} = require("../src/controllers/UserControllers/paymentController");
 
 const router = express.Router();
 

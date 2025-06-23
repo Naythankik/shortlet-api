@@ -1,10 +1,10 @@
-const errorHandler = require('../helper/error-handlers');
-const apartmentResource = require('../resources/apartmentResource');
-const reviewResource = require('../resources/reviewResource');
-const Apartment = require('../models/apartment');
-const Review = require('../models/review');
-const {createRequest, updateRequest, createReviewRequest, updateReviewRequest} = require("../requests/apartmentRequest");
-const {uploadImage} = require("../helper/file");
+const errorHandler = require('../../helper/error-handlers');
+const apartmentResource = require('../../resources/apartmentResource');
+const reviewResource = require('../../resources/reviewResource');
+const Apartment = require('../../models/apartment');
+const Review = require('../../models/review');
+const {createRequest, updateRequest, createReviewRequest, updateReviewRequest} = require("../../requests/apartmentRequest");
+const {uploadImage} = require("../../helper/file");
 
 const createApartment = async function (req, res) {
     const { error, value } = createRequest(req.body);

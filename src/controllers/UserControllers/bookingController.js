@@ -1,4 +1,4 @@
-const bookingService = require("../services/BookingService");
+const bookingService = require("../../services/BookingService");
 
 module.exports = {
     create: bookingService.createBooking.bind(bookingService),

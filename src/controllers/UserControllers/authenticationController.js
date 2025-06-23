@@ -1,11 +1,11 @@
-const User = require('../models/user');
-const Token = require('../models/token');
-const userResource = require('../resources/userResource');
-const { generateOTP, generateToken, createAccessToken, createRefreshToken, verifyToken} = require("../helper/token");
-const { sendMail, getMessageTemplate } = require("../helper/mail");
+const User = require('../../models/user');
+const Token = require('../../models/token');
+const userResource = require('../../resources/userResource');
+const { generateOTP, generateToken, createAccessToken, createRefreshToken, verifyToken} = require("../../helper/token");
+const { sendMail, getMessageTemplate } = require("../../helper/mail");
 const Joi = require("joi");
 const e = require("express");
-const { registerRequest, loginRequest } = require("../requests/authRequest");
+const { registerRequest, loginRequest } = require("../../requests/authRequest");
 
 const register = async (req, res) => {
     const { error, value } = registerRequest(req.body);

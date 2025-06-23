@@ -17,7 +17,7 @@ const discountRoutes = require('./routes/discount');
 const messageRoutes = require('./routes/message');
 
 const authentication = require('./src/middlewares/authentication')
-const { userAuthorization, adminAuthorization } = require("./src/middlewares/authorization");
+const { userAuthorization } = require("./src/middlewares/authorization");
 
 const app = express();
 connection();
@@ -46,7 +46,7 @@ app.use('/api/v1/shortlet-api/bookings', authentication, bookingRoutes)
 app.use('/api/v1/shortlet-api/payments', authentication, paymentRoutes)
 
 // Admin side of things
-app.use('/api/v1/shortlet-api/admin',authentication, adminAuthorization, adminRoutes)
+app.use('/api/v1/shortlet-api/admin', adminRoutes)
 app.use('/api/v1/shortlet-api/wishlists', authentication, wishlistRoutes)
 app.use('/api/v1/shortlet-api/discounts', discountRoutes)
 app.use('/api/v1/shortlet-api/message', messageRoutes)

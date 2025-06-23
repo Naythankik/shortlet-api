@@ -1,6 +1,6 @@
 const express = require('express');
 const upload = require('../src/helper/multer')
-const { read, readAnApartment, deleteAnApartment, popularApartments, create, update, addReview, getReviews, deleteReview } = require("../src/controllers/apartmentController");
+const { read, readAnApartment, deleteAnApartment, popularApartments, create, update, addReview, getReviews, deleteReview } = require("../src/controllers/UserControllers/apartmentController");
 const { userAuthorization, ownerAuthorization } = require("../src/middlewares/authorization");
 const router = express.Router();
 

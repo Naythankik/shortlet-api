@@ -1,5 +1,5 @@
 const express = require('express');
-const {read, updateProfile} = require("../src/controllers/userController");
+const {read, updateProfile} = require("../src/controllers/UserControllers/userController");
 
 const router = express.Router();
 

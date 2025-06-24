@@ -8,7 +8,7 @@ const ROLES = {
 // Base authorization middleware
 const authorize = async (req, res, next, requiredRole) => {
     try {
-        const { role } = req.user;
+        const { role } = req[requiredRole];
 
         if (role !== requiredRole) {
             return res.status(500).json(errorHandler({

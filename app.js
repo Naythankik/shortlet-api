@@ -16,8 +16,8 @@ const wishlistRoutes = require('./routes/wishlist');
 const discountRoutes = require('./routes/discount');
 const messageRoutes = require('./routes/message');
 
-const authentication = require('./src/middlewares/authentication')
 const { userAuthorization } = require("./src/middlewares/authorization");
+const { userAuthentication } = require("./src/middlewares/authentication");
 
 const app = express();
 connection();
@@ -40,14 +40,14 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/v1/shortlet-api/auth', authRoutes)
-app.use('/api/v1/shortlet-api/user', authentication, userAuthorization, userRoutes)
-app.use('/api/v1/shortlet-api/apartments', authentication, apartmentRoutes)
-app.use('/api/v1/shortlet-api/bookings', authentication, bookingRoutes)
-app.use('/api/v1/shortlet-api/payments', authentication, paymentRoutes)
+app.use('/api/v1/shortlet-api/user', userAuthentication, userAuthorization, userRoutes)
+app.use('/api/v1/shortlet-api/apartments', userAuthentication, apartmentRoutes)
+app.use('/api/v1/shortlet-api/bookings', userAuthentication, bookingRoutes)
+app.use('/api/v1/shortlet-api/payments', userAuthentication, paymentRoutes)
+app.use('/api/v1/shortlet-api/wishlists', userAuthentication, wishlistRoutes)
 
 // Admin side of things
 app.use('/api/v1/shortlet-api/admin', adminRoutes)
-app.use('/api/v1/shortlet-api/wishlists', authentication, wishlistRoutes)
 app.use('/api/v1/shortlet-api/discounts', discountRoutes)
 app.use('/api/v1/shortlet-api/message', messageRoutes)
 

@@ -1,76 +1,99 @@
 const { verifyToken, createAccessToken } = require("../helper/token");
 const User = require("../models/user");
 
-const authentication = async (req, res, next) => {
+const userAuthentication = async (req, res, next) => {
     try {
-        const { authorization, cookie } = req.headers;
+        const authHeader = req.headers.authorization;
+        const refreshToken = req.headers.cookie.split('=')[1];
 
-        //Check if the request header has an authorization and a cookie token
-        if (!authorization || !authorization.startsWith("Bearer ") || !cookie || !cookie.includes("refreshToken")) {
+        if (!authHeader || !authHeader.startsWith("Bearer ") || !refreshToken) {
             return res.status(401).json({
                 success: false,
                 message: "Access denied. No token provided"
             });
         }
 
-        const token = authorization.split(' ')[1];
-
+        const token = authHeader.split(' ')[1];
         const { user: { email, id }, exp } = await verifyToken(token);
 
-        const user = await User.findOne({
-            email,
-            _id: id,
-            isActive: true
-        }).select('-password');
-
+        const user = await User.findOne({ _id: id, email, isActive: true }).select("-password");
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: "Access denied. User not found or inactive"
+                message: "User not found or inactive"
             });
         }
 
-        const now = Date.now().valueOf() / 1000;
-        const gracePeriod = 5 * 60;
-
-        if (exp - now <= gracePeriod) {
-            const newToken = await createAccessToken({ email, id }, "1h");
-
+        const now = Date.now() / 1000;
+        if (exp && exp < now + 5 * 60) {
+            const newToken = await createAccessToken({ user: { email, id } }, "1h");
             res.cookie("token", newToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
                 sameSite: "Strict",
-                maxAge: 60 * 60 * 1000,
-                path: '/' // Adjust based on your API path
+                secure: process.env.NODE_ENV === "production",
+                maxAge: 60 * 60 * 1000
             });
         }
 
-        req.user = {
-            email,
-            id,
-            role: user.role
-        }
-        return next();
+        req.user = { email, id, role: user.role };
+        next();
     } catch (err) {
-        if (err.name === "TokenExpiredError") {
+        const message = err.name === "TokenExpiredError"
+            ? "Token has expired"
+            : err.name === "JsonWebTokenError"
+                ? "Invalid token"
+                : "Internal server error during authentication";
+
+        return res.status(401).json({ success: false, message });
+    }
+};
+
+const adminAuthentication = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const refreshToken = req.headers.cookie.split('=')[1];
+
+        if (!authHeader || !authHeader.startsWith("Bearer ") || !refreshToken) {
             return res.status(401).json({
                 success: false,
-                message: "Access denied. Token has expired"
+                message: "Access denied. No token provided"
             });
         }
 
-        if (err.name === "JsonWebTokenError") {
-            return res.status(401).json({
+        const token = authHeader.split(" ")[1];
+        const { admin: { email, id }, exp } = await verifyToken(token);
+
+        const admin = await User.findOne({ _id: id, email, isActive: true }).select("-password");
+
+        if (!admin || admin.role !== "admin") {
+            return res.status(403).json({
                 success: false,
-                message: "Access denied. Invalid token"
+                message: "Forbidden. Admin access required"
             });
         }
 
+        const now = Date.now() / 1000;
+        if (exp && exp < now + 5 * 60) {
+            const newToken = await createAccessToken({ admin: { email, id } }, "1h");
+            res.cookie("token", newToken, {
+                httpOnly: true,
+                sameSite: "Strict",
+                secure: process.env.NODE_ENV === "production",
+                maxAge: 60 * 60 * 1000
+            });
+        }
+
+        req.admin = { email, id, role: admin.role };
+        next();
+    } catch (err) {
         return res.status(500).json({
             success: false,
-            message: "Internal server error during authentication"
+            message: "Internal server error during admin authentication"
         });
     }
 };
 
-module.exports = authentication;
+module.exports = {
+    userAuthentication,
+    adminAuthentication
+};

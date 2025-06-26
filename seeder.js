@@ -35,7 +35,7 @@ const seederBookings = async () => {
 };
 
 const seederApartments = async () => {
-    const apartments = await apartmentFactory(100);
+    const apartments = await apartmentFactory(300);
     try {
         await Apartment.insertMany(apartments);
         console.log('Apartment seeded successfully');
@@ -79,8 +79,8 @@ const seederReviews = async () => {
 const runSeeders = async () => {
     try {
         // await seederUsers();
-        // await seederApartments()
-        await seederBookings()
+        await seederApartments()
+        // await seederBookings()
         // await seederReviews()
         // await updateApartmentReviewSeeders()
         console.log('All seeders completed successfully!');

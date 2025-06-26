@@ -20,10 +20,6 @@ const User = new mongoose.Schema({
         required: true,
         unique: true
     },
-    dateOfBirth: {
-        type: Date,
-        required: true,
-    },
     password: {
         type: String,
         required: true,
@@ -35,7 +31,7 @@ const User = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin' , 'user'],
+        enum: ['admin' , 'user', 'host'],
         default: 'user'
     },
     profilePicture: {

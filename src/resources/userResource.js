@@ -6,7 +6,6 @@ const userResource = (user) => {
         telephone: user.telephone,
         email: user.email,
         role: user.role,
-        dateOfBirth: user.dateOfBirth,
         isVerified: user.isVerified,
         status: user.status,
         profilePicture: user.profilePicture,

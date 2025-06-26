@@ -44,17 +44,26 @@ const ApartmentSchema = new mongoose.Schema({
             required: true
         }
     },
-    discount: {
-      percentage: Number,
-      startDate: Date,
-      endDate: Date
+    features: {
+        type: [String],
+        required: true
+    },
+    cautionFee: {
+        type: String,
+        required: true
     },
     images: {
         type: [String],
         required: true
     },
-    properties: {
-        type: [String],
+    properties: [
+        {
+            name: { type: String, required: true },
+            quantity: { type: Number, required: true }
+        }
+    ],
+    maxGuests: {
+        type: Number,
         required: true
     },
     rules: {
@@ -73,6 +82,11 @@ const ApartmentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
     }],
+    discount: {
+        percentage: Number,
+        startDate: Date,
+        endDate: Date
+    }
 }, { timestamps: true });
 
 ApartmentSchema.index({ "address.city": 1, price: 1 });

@@ -14,7 +14,7 @@ const registerRequest = (data) => {
         'email': Joi.string().email().required(),
         'telephone': Joi.string().required(),
         'password': Joi.string().min(8).required(),
-        'dateOfBirth': Joi.date().less('now').required()
+        'role': Joi.string().valid('user', 'host').required(),
     }).validate(data, { abortEarly: false})
 }
 

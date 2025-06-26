@@ -4,7 +4,6 @@ const userResource = require('../../resources/userResource');
 const { generateOTP, generateToken, createAccessToken, createRefreshToken, verifyToken} = require("../../helper/token");
 const { sendMail, getMessageTemplate } = require("../../helper/mail");
 const Joi = require("joi");
-const e = require("express");
 const { registerRequest, loginRequest } = require("../../requests/authRequest");
 
 const register = async (req, res) => {
@@ -94,7 +93,7 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "User account has not been verified" });
         }
 
-        user.password = undefined;
+        delete user.password
 
         const accessToken = await createAccessToken({
             user: { email: user.email, id: user._id }
@@ -334,7 +333,7 @@ const forgotPassword = async (req, res) => {
         }
         return res.status(200).json({message: "A password reset link has been sent to the provided email"})
     }catch (err){
-        console.error(e)
+        console.error(err)
         return res.status(500).json({error: err.message})
     }
 }

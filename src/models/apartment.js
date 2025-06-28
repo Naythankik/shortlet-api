@@ -86,6 +86,11 @@ const ApartmentSchema = new mongoose.Schema({
         percentage: Number,
         startDate: Date,
         endDate: Date
+    },
+    host: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, { timestamps: true });
 

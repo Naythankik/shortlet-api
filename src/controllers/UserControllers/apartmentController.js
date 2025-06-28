@@ -118,7 +118,8 @@ const readApartment = async (req, res) => {
                     path: 'user',
                     select: 'firstName lastName -_id profilePicture'
                 }
-            });
+            })
+            .populate('host', 'firstName profilePicture -_id');
 
         if(!apartment){
             return res.status(404).json(errorHandler({message:"not found"}))

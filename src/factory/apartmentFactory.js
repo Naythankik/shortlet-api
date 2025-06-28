@@ -1,4 +1,5 @@
 const { faker } = require('@faker-js/faker');
+const User = require('../models/user');
 
 const allTags = [
     "wifi", "air-conditioning", "swimming-pool", "generator", "security",
@@ -39,6 +40,7 @@ const availableProperties = [
     ...bathroomItems,
     ...others
 ];
+
 const staticImages = [
     "https://images.pexels.com/photos/3797991/pexels-photo-3797991.jpeg?auto=compress&cs=tinysrgb&w=800",
     "https://images.pexels.com/photos/26556328/pexels-photo-26556328.jpeg?auto=compress&cs=tinysrgb&w=800",
@@ -61,6 +63,13 @@ const staticImages = [
     "https://images.pexels.com/photos/14495883/pexels-photo-14495883.jpeg?auto=compress&cs=tinysrgb&w=800"
 ];
 
+const randomObjectId = async (model) => {
+    const result = await model.aggregate([
+        { $match: { role: 'host' } },
+        { $sample: { size: 1 } }]);
+    return result[0]?._id;
+};
+
 const apartment = async () => {
     return {
         name: faker.company.name(),
@@ -72,6 +81,7 @@ const apartment = async () => {
             country: faker.location.country(),
             postcode: faker.location.zipCode()
         },
+        host: await randomObjectId(User),
         location: {
             type: "Point",
             coordinates: [

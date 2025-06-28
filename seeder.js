@@ -77,9 +77,10 @@ const seederReviews = async () => {
 
 // Run seeders sequentially
 const runSeeders = async () => {
+    console.log("Seeder is processing............")
     try {
         // await seederUsers();
-        await seederApartments()
+        // await seederApartments()
         // await seederBookings()
         // await seederReviews()
         // await updateApartmentReviewSeeders()

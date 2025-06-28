@@ -11,10 +11,9 @@ const user = async () => {
         email: faker.internet.email(),
         password: password,
         telephone: faker.phone.number(),
-        dateOfBirth: faker.date.past(),
         isVerified: faker.datatype.boolean(),
         profilePicture: faker.image.avatar(),
-        role: faker.helpers.arrayElement(['admin','user']),
+        role: faker.helpers.arrayElement(['admin','user', 'host']),
         createdAt: faker.date.past(),
         updatedAt: faker.date.past()
     }

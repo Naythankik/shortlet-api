@@ -1,4 +1,5 @@
 const ReviewResource = require('./reviewResource');
+const UserResource = require('./userResource');
 
 const apartmentResource = (apartment) => {
     return {
@@ -22,7 +23,8 @@ const apartmentResource = (apartment) => {
         isAvailable: apartment.isAvailable,
         reviews: ReviewResource(apartment.reviews),
         createdAt: apartment.createdAt,
-        updatedAt: apartment.updatedAt
+        updatedAt: apartment.updatedAt,
+        host: UserResource(apartment.host)
     }
 }
 

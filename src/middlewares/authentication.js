@@ -38,7 +38,7 @@ const userAuthentication = async (req, res, next) => {
         req.user = { email, id, role: user.role };
         next();
     } catch (err) {
-        return res.status(401).json({ success: false, message });
+        return res.status(401).json({ success: false, error: err.message });
     }
 };
 

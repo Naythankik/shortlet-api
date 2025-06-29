@@ -26,7 +26,7 @@ connection();
 // Passing this cause the json() middleware interrupts the webhook request.
 app.use('/api/v1/shortlet-api/webhook', webhookRoutes)
 
-//
+
 // app.use(cors({
 //     origin: process.env.HOSTED_URL,
 //     credentials: true,
@@ -40,7 +40,7 @@ app.use('/api/v1/shortlet-api/webhook', webhookRoutes)
 //     ],
 // }));
 
-app.use(cors())
+app.use(cors('*'))
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

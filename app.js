@@ -28,7 +28,7 @@ app.use('/api/v1/shortlet-api/webhook', webhookRoutes)
 
 
 app.use(cors({
-    origin: process.env.HOSTED_URL,
+    origin: 'https://3ird-shortlet.vercel.app',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [

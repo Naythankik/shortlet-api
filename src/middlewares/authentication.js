@@ -1,46 +1,45 @@
 const { verifyToken, createAccessToken } = require("../helper/token");
 const User = require("../models/user");
 
+// middleware/userAuthentication.js
 const userAuthentication = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        const refreshToken = req.headers.cookie.split('=')[1];
+        const authHeader   = req.headers.authorization || '';
+        const refreshToken = req.cookies?.token;
 
-        if (!authHeader || !authHeader.startsWith("Bearer ") || !refreshToken) {
+        if (!authHeader.startsWith('Bearer ') || !refreshToken) {
             return res.status(401).json({
                 success: false,
-                message: "Access denied. No token provided"
+                message: 'Access denied. No token provided',
             });
         }
 
         const token = authHeader.split(' ')[1];
         const { user: { email, id }, exp } = await verifyToken(token);
 
-        const user = await User.findOne({ _id: id, email, isActive: true }).select("-password");
+        const user = await User.findOne({ _id: id, email, isActive: true }).select('-password');
         if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "User not found or inactive"
-            });
+            return res.status(401).json({ success: false, message: 'User not found or inactive' });
         }
 
         const now = Date.now() / 1000;
         if (exp && exp < now + 5 * 60) {
-            const newToken = await createAccessToken({ user: { email, id } }, "1h");
-            res.cookie("token", newToken, {
+            const newToken = await createAccessToken({ user: { email, id } }, '1h');
+            res.cookie('token', newToken, {
                 httpOnly: true,
-                sameSite: "Strict",
-                secure: process.env.NODE_ENV === "production",
-                maxAge: 60 * 60 * 1000
+                sameSite : process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+                secure   : true,                // only https on Vercel
+                maxAge   : 60 * 60 * 1000,
             });
         }
 
         req.user = { email, id, role: user.role };
         next();
     } catch (err) {
-        return res.status(401).json({ success: false, error: err.message });
+        res.status(401).json({ success: false, error: err.message });
     }
 };
+
 
 const adminAuthentication = async (req, res, next) => {
     try {

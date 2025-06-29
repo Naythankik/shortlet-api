@@ -39,6 +39,8 @@ app.use('/api/v1/shortlet-api/webhook', webhookRoutes)
 //         'Cookie'
 //     ],
 // }));
+
+app.use(cors())
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

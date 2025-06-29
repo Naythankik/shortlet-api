@@ -22,13 +22,12 @@ const { userAuthentication } = require("./src/middlewares/authentication");
 const app = express();
 connection();
 
-
 // Passing this cause the json() middleware interrupts the webhook request.
 app.use('/api/v1/shortlet-api/webhook', webhookRoutes)
 
 
 app.use(cors({
-    origin: 'https://3ird-shortlet.vercel.app',
+    origin: process.env.HOSTED_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
@@ -43,7 +42,6 @@ app.use(cors({
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 app.use('/api/v1/shortlet-api/auth', authRoutes)
 app.use('/api/v1/shortlet-api/user', userAuthentication, userAuthorization, userRoutes)

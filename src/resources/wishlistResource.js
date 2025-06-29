@@ -4,8 +4,6 @@ const userResource = require('./userResource')
 const wishlistResource = (wishlist) => {
     return {
         id: wishlist._id,
-        name: wishlist.name,
-        description: wishlist.description,
         user: userResource(wishlist.user),
         apartments: apartmentResource(wishlist.apartments),
         createdAt: wishlist.createdAt,

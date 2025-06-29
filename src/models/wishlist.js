@@ -10,15 +10,7 @@ const wishlistSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Apartment'
-    }],
-    name: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        required: true
-    }
+    }]
 }, {
     timestamps: true
 });

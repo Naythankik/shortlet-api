@@ -38,12 +38,6 @@ const userAuthentication = async (req, res, next) => {
         req.user = { email, id, role: user.role };
         next();
     } catch (err) {
-        const message = err.name === "TokenExpiredError"
-            ? "Token has expired"
-            : err.name === "JsonWebTokenError"
-                ? "Invalid token"
-                : "Internal server error during authentication";
-
         return res.status(401).json({ success: false, message });
     }
 };

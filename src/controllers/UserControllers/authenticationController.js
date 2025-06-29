@@ -224,6 +224,7 @@ const requestVerification = async (req, res) => {
 }
 
 const refreshAccessToken = async (req, res) => {
+    console.log(req.cookies, "Nathaniel")
     const refreshToken = req.cookies?.refreshToken ||
         (req.headers.cookie && req.headers.cookie.split(';')
             .find(c => c.trim().startsWith('refreshToken='))?.split('=')[1]);

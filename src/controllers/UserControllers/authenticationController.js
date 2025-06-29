@@ -93,7 +93,7 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "User account has not been verified" });
         }
 
-        delete user.password
+        user.password = null
 
         const accessToken = await createAccessToken({
             user: { email: user.email, id: user._id }
@@ -105,10 +105,11 @@ const login = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            // secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000
+            secure: process.env.NODE_ENV === 'production', // secure cookie on production
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // allow cross-site if needed
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
+
 
         return res.status(200).json({
             access_token : accessToken,

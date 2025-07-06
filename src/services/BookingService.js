@@ -127,7 +127,7 @@ class BookingService {
 
         try{
             const booking = await Booking.findById(bookingId)
-                .populate("apartment", 'name description location images');
+                .populate("apartment");
 
             if(!booking){
                 return res.status(404).json(errorHandler({ message: 'not found'}));
@@ -212,7 +212,10 @@ class BookingService {
                 price -= (percentage / 100) * price;
             }
         }
-        return Math.round(price);
+
+        // Add the caution fee to the price
+        price += Number(apartment.cautionFee);
+        return price;
     }
 }
 

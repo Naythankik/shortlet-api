@@ -34,7 +34,7 @@ class WishlistService {
         try{
             const wishlists = await Wishlist.find({user: req.user.id})
                 .select('apartments')
-                .populate('apartments', 'name imagess description location price')
+                .populate('apartments', 'name images description address price')
 
             return res.status(200).json({
                 message: "Wishlist fetched successfully",

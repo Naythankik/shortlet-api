@@ -17,7 +17,7 @@ const userAuthentication = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         const { user: { email, id }, exp } = await verifyToken(token);
 
-        const user = await User.findOne({ _id: id, email, isActive: true }).select('-password');
+        const user = await User.findOne({ _id: id, email }).select('-password');
         if (!user) {
             return res.status(401).json({ success: false, message: 'User not found or inactive' });
         }

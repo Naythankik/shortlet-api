@@ -39,9 +39,10 @@ const createCheckoutSession = async (req, res) => {
                     price_data: {
                         currency: (currency || 'usd').toLowerCase(),
                         product_data: {
-                            name: description || 'Shortlet Booking',
+                            name: `Stay @ ${booking.apartment.name}`,
+                            images: [booking.apartment.images[0]],
                         },
-                        unit_amount: booking.totalPrice,
+                        unit_amount: booking.totalPrice * 100,
                     },
                     quantity: 1,
                 },
@@ -56,9 +57,14 @@ const createCheckoutSession = async (req, res) => {
                 user: id,
                 booking: bookingId,
             },
-            success_url: `${process.env.HOSTED_URL}/apartment/${booking.apartment}?success`,
-            cancel_url: `${process.env.HOSTED_URL}/apartment/${booking.apartment}?cancel`,
+            success_url: `${process.env.HOSTED_URL}/booking/${booking.apartment._id}/payment/${booking._id}?success`,
+            cancel_url: `${process.env.HOSTED_URL}/booking/${booking.apartment._id}/payment/${booking._id}?cancel`,
+            payment_intent_data: {
+                description: description || "Apartment booking",
+            },
         });
+
+        await booking.updateOne({paymentStatus : 'processed'});
 
         return res.status(201).json({
             status: 200,

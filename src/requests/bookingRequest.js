@@ -10,7 +10,6 @@ const createRequest = (data) => {
                 'date.base': 'Check-in date must be a valid date',
                 'any.required': 'Check-in date is required'
             }),
-
         checkOutDate: Joi.date()
             .greater('now')
             .greater(Joi.ref('checkInDate'))
@@ -20,7 +19,6 @@ const createRequest = (data) => {
                 'date.base': 'Check-out date must be a valid date',
                 'any.required': 'Check-out date is required'
             }),
-
         guests: Joi.number()
             .integer()
             .min(1)
@@ -31,7 +29,7 @@ const createRequest = (data) => {
                 'any.required': 'Number of guests is required'
             }),
 
-        specialRequests: Joi.string().optional()
+        specialRequests: Joi.string().allow('')
     }).validate(data, { abortEarly: false });
 };
 
@@ -62,7 +60,7 @@ const updateRequest = (data) => {
                 'number.min': 'At least one guest is required'
             }),
 
-        specialRequests: Joi.string().optional()
+        specialRequests: Joi.string().allow('')
     }).custom((value, helpers) => {
         const { checkInDate, checkOutDate } = value;
 

@@ -17,7 +17,7 @@ const createCheckoutSession = async (req, res) => {
     const booking = await Booking.findOne({
         _id: bookingId,
         user: id
-    });
+    }).populate('apartment');
 
     if(!booking){
         return res.status(400).send({ message: 'Booking not found' })
@@ -42,7 +42,7 @@ const createCheckoutSession = async (req, res) => {
                             name: `Stay @ ${booking.apartment.name}`,
                             images: [booking.apartment.images[0]],
                         },
-                        unit_amount: booking.totalPrice * 100,
+                        unit_amount: Math.ceil(booking.totalPrice * 100),
                     },
                     quantity: 1,
                 },
@@ -76,6 +76,7 @@ const createCheckoutSession = async (req, res) => {
         })
 
     } catch (error) {
+        console.log(error)
         return res.status(500).json({
             status: error.statusCode,
             message: error.message,

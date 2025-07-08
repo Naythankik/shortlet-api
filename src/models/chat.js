@@ -18,7 +18,10 @@ const ChatSchema = new Schema(
     { timestamps: true }
 );
 
-ChatSchema.index({ participants: 1 }, { unique: true });
+ChatSchema.index(
+    { 'participants.0': 1, 'participants.1': 1 },
+    { unique: true }
+);
 
 ChatSchema.pre('validate', function (next) {
     if (this.participants.length !== 2)

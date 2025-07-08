@@ -4,7 +4,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const PORT = process.env.PORT || 3000;
-const connection = require('./config/database');
+const connection = require('./config/database')
+const { Server } = require('socket.io');
+const { createServer } = require('http');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
@@ -14,6 +16,7 @@ const bookingRoutes = require('./routes/booking');
 const paymentRoutes = require('./routes/payment');
 const adminRoutes = require('./routes/admin');
 const wishlistRoutes = require('./routes/wishlist');
+const chatRoutes = require('./routes/chat');
 const discountRoutes = require('./routes/discount');
 const messageRoutes = require('./routes/message');
 
@@ -21,6 +24,14 @@ const { userAuthorization } = require("./src/middlewares/authorization");
 const { userAuthentication } = require("./src/middlewares/authentication");
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: process.env.HOSTED_URL,
+        methods: ['GET', 'POST']
+    }
+});
+
 connection();
 
 // Passing this cause the json() middleware interrupts the webhook request.
@@ -50,6 +61,7 @@ app.use('/api/v1/shortlet-api/apartments', userAuthentication, apartmentRoutes)
 app.use('/api/v1/shortlet-api/bookings', userAuthentication, bookingRoutes)
 app.use('/api/v1/shortlet-api/payments', userAuthentication, paymentRoutes)
 app.use('/api/v1/shortlet-api/wishlists', userAuthentication, wishlistRoutes)
+app.use('/api/v1/shortlet-api/chats', userAuthentication, chatRoutes)
 
 // Admin side of things
 app.use('/api/v1/shortlet-api/admin', adminRoutes)
@@ -62,6 +74,19 @@ app.use('/', (req, res) => {
     })
 })
 
-app.listen(PORT, () => {
+io.on('connection', socket => {
+    console.log('User connected');
+
+    socket.on('send_message', message => {
+        console.log(message)
+        io.emit('receive_message', 'Your message has been received successfully.');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 })

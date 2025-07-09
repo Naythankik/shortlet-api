@@ -2,6 +2,7 @@ const Joi = require("joi");
 const Chat = require("../../models/chat");
 const Message = require("../../models/message");
 const chatResource = require('../../resources/chatResource')
+const messageResource = require('../../resources/messageResource')
 
 const createChat = async (req, res) => {
     const { error, value } = Joi.object({
@@ -55,7 +56,7 @@ const createChat = async (req, res) => {
             readBy: [senderId],
         });
 
-        // Update last message on chat
+        // Update last message on686d8eb87d6cb87a44413f23 chat
         chat.lastMessage = {
             text: message,
             at: newMessage.createdAt,
@@ -65,8 +66,8 @@ const createChat = async (req, res) => {
 
         return res.status(201).json({
             message: 'Message sent successfully',
-            chat,
-            newMessage,
+            chat: chatResource(chat),
+            newMessage: messageResource(newMessage),
         });
     } catch (err) {
         console.error(err);
@@ -99,7 +100,47 @@ const readChat = async (req, res) => {
     }
 }
 
+const readMessages = async (req, res) => {
+    const { id } = req.user
+    const { chatId } = req.params
+
+    try{
+        const chat = await Chat.findOne({
+            _id: chatId,
+            participants: { $elemMatch: { $eq : id} }
+        })
+
+        if(!chat){
+            return res.status(404).json({ message: 'Chat not found' })
+        }
+
+        await Message.updateMany(
+            {
+                chat: chatId,
+                readBy: { $ne: id }
+            },
+            {
+                $addToSet: { readBy: id }
+            }
+        );
+
+        const messages = await Message.find({ chat: chatId })
+            .populate('sender', 'profilePicture firstName lastName')
+            .populate('chat')
+            .sort({ createdAt: 1 });
+
+        return res.status(200).json({
+            message: 'Messages fetched successfully',
+            messages: messageResource(messages),
+        })
+    }catch (e){
+        console.log(e)
+        return res.status(500).json({ error: 'Server error' });
+    }
+}
+
 module.exports = {
     createChat,
-    readChat
+    readChat,
+    readMessages
 };

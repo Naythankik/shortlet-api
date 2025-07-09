@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Message = require("../models/message");
+const Chat = require("../models/chat");
+const messageResource = require('../resources/messageResource');
 
 const registerSocketHandlers = (io) => {
     io.use(async (socket, next) => {
@@ -32,15 +35,35 @@ const registerSocketHandlers = (io) => {
         });
 
         // Send a message
-        socket.on('message:send', ({ chatId, message }, ack) => {
-            io.to(chatId).emit('message:new', {
-                chatId,
-                message,
-                senderId: socket.userId
-            });
+        socket.on('message:send', async ({ chatId, message }, ack) => {
+            try {
+                console.log(chatId, message)
+                const newMessage = await Message.create({
+                    chat: chatId,
+                    sender: socket.userId,
+                    type: 'text',
+                    text: message,
+                    readBy: [socket.userId],
+                });
 
-            ack?.({ status: 'ok' });
-        });
+                await Chat.findOneAndUpdate({_id: chatId}, {
+                    lastMessage: {
+                        text: message,
+                        at: new Date(),
+                        sender: socket.userId,
+                    }
+                })
+
+                const fullMessage = await Message.findById(newMessage._id)
+                    .populate('chat').populate('sender', 'firstName lastName profilePicture')
+                io.to(chatId).emit('message:new', messageResource(fullMessage));
+
+                ack?.({status: 'ok', msgId: fullMessage._id});
+            } catch (e) {
+                console.error('Error sending message:', e);
+                ack?.({status: 'error', msg: 'Failed to send message'});
+            }
+        })
 
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.userId);

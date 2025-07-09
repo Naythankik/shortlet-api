@@ -6,7 +6,7 @@ const apartmentResource = (chat) => {
         lastMessage: chat?.lastMessage ? {
             text: chat.lastMessage.text,
             sender: UserResource(chat.lastMessage.sender),
-            createdAt: chat.lastMessage.at,
+            updatedAt: chat.lastMessage.at,
         } : undefined,
         createdAt: chat.createdAt,
         updatedAt: chat.updatedAt,

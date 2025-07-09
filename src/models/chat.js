@@ -1,5 +1,6 @@
 const { Schema, model, Types } = require('mongoose');
 
+
 const ChatSchema = new Schema(
     {
         participants: [

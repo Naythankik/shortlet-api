@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const Chat = require("../../models/chat");
 const Message = require("../../models/message");
+const chatResource = require('../../resources/chatResource')
 
 const createChat = async (req, res) => {
     const { error, value } = Joi.object({
@@ -73,6 +74,32 @@ const createChat = async (req, res) => {
     }
 };
 
+const readChat = async (req, res) => {
+    const { id } = req.user
+
+    try{
+        const chats = await Chat.find({
+            participants: { $elemMatch: { $eq : id} }
+        })
+            .populate('lastMessage.sender', 'profilePicture firstName lastName')
+            .populate('participants', 'profilePicture firstName lastName')
+            .sort('-updatedAt')
+
+        if (!chats){
+            return res.status(404).json({ message: 'No chats found' })
+        }
+        return res.status(200).json({
+            message: "Chats fetched successfully",
+            chats: chats.length ? chatResource(chats) : chats
+        })
+
+    }catch (e){
+        console.log(e)
+        return res.status(500).json({ error: 'Server error' });
+    }
+}
+
 module.exports = {
     createChat,
+    readChat
 };

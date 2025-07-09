@@ -22,6 +22,7 @@ const messageRoutes = require('./routes/message');
 
 const { userAuthorization } = require("./src/middlewares/authorization");
 const { userAuthentication } = require("./src/middlewares/authentication");
+const {registerSocketHandlers} = require("./src/socket");
 
 const app = express();
 const server = createServer(app);
@@ -55,6 +56,8 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+registerSocketHandlers(io);
+
 app.use('/api/v1/shortlet-api/auth', authRoutes)
 app.use('/api/v1/shortlet-api/user', userAuthentication, userAuthorization, userRoutes)
 app.use('/api/v1/shortlet-api/apartments', userAuthentication, apartmentRoutes)
@@ -73,19 +76,6 @@ app.use('/', (req, res) => {
         message: 'Whoops!'
     })
 })
-
-io.on('connection', socket => {
-    console.log('User connected');
-
-    socket.on('send_message', message => {
-        console.log(message)
-        io.emit('receive_message', 'Your message has been received successfully.');
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

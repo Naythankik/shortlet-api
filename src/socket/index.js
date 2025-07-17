@@ -35,7 +35,7 @@ const registerSocketHandlers = (io) => {
         });
 
         // Send a message
-        socket.on('message:send', async ({ chatId, message }, ack) => {
+        socket.on('message:send', async ({ chatId, message }) => {
             try {
                 console.log(chatId, message)
                 const newMessage = await Message.create({
@@ -58,10 +58,8 @@ const registerSocketHandlers = (io) => {
                     .populate('chat').populate('sender', 'firstName lastName profilePicture')
                 io.to(chatId).emit('message:new', messageResource(fullMessage));
 
-                ack?.({status: 'ok', msgId: fullMessage._id});
             } catch (e) {
                 console.error('Error sending message:', e);
-                ack?.({status: 'error', msg: 'Failed to send message'});
             }
         })
 

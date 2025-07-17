@@ -25,14 +25,14 @@ const updateProfile = async (req, res) => {
     }
 
     const { error, value } = updateRequest(req.body);
-    const { id } = req.auth
+    const { id } = req.user
 
     if(error){
         return res.status(400).json(error.map(err => errorHandler(err)));
     }
 
     try{
-        const user = await User.findByIdAndUpdate(id, value);
+        const user = await User.findByIdAndUpdate(id, value, { new: true});
 
         return res.status(200).json({
             user: userResource(user)

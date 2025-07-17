@@ -6,7 +6,6 @@ const updateRequest = (data) => {
         'lastName': Joi.string(),
         'email': Joi.string().email(),
         'telephone': Joi.string(),
-        'dateOfBirth': Joi.date().less('now'),
     }).validate(data, { abortEarly: false})
 }
 

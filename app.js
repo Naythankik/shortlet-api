@@ -17,6 +17,7 @@ const paymentRoutes = require('./routes/payment');
 const adminRoutes = require('./routes/admin');
 const wishlistRoutes = require('./routes/wishlist');
 const chatRoutes = require('./routes/chat');
+const notificationRoutes = require('./routes/notification');
 const discountRoutes = require('./routes/discount');
 const messageRoutes = require('./routes/message');
 
@@ -65,6 +66,7 @@ app.use('/api/v1/shortlet-api/bookings', userAuthentication, bookingRoutes)
 app.use('/api/v1/shortlet-api/payments', userAuthentication, paymentRoutes)
 app.use('/api/v1/shortlet-api/wishlists', userAuthentication, wishlistRoutes)
 app.use('/api/v1/shortlet-api/chats', userAuthentication, chatRoutes)
+app.use('/api/v1/shortlet-api/notifications', userAuthentication, notificationRoutes)
 
 // Admin side of things
 app.use('/api/v1/shortlet-api/admin', adminRoutes)

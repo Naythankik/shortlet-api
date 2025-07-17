@@ -1,4 +1,6 @@
 const userFactory = require('./src/factory/userFactory');
+const chatFactory = require('./src/factory/chatFactory');
+const messageFactory = require('./src/factory/messageFactory');
 const apartmentFactory = require('./src/factory/apartmentFactory');
 const bookingFactory = require('./src/factory/bookingFactory');
 const reviewFactory = require('./src/factory/reviewsFactory');
@@ -6,6 +8,8 @@ const User = require('./src/models/user');
 const Booking = require('./src/models/bookings');
 const Apartment = require('./src/models/apartment');
 const Review = require('./src/models/review');
+const Chat = require('./src/models/chat');
+const Message = require('./src/models/message');
 require('dotenv').config();
 
 const connection = require("./config/database");
@@ -22,6 +26,36 @@ const seederUsers = async () => {
         throw err;
     }
 };
+
+const chatSeeder = async () => {
+    const chats = await chatFactory(30)
+    try{
+        await Chat.insertMany(chats)
+    }catch (err) {
+        console.error('Error seeding users:', err);
+        throw err;
+    }
+}
+
+const messageSeeder = async () => {
+    const messages = await messageFactory(1120)
+
+    try{
+        for (const message of messages) {
+            const chat = await Message.create(message);
+            await Chat.findByIdAndUpdate(chat.chat, {
+                lastMessage: {
+                    text: chat.text,
+                    at: chat.createdAt,
+                    sender: chat.sender,
+                }
+            })
+        }
+    }catch (err) {
+        console.error('Error seeding users:', err);
+        throw err;
+    }
+}
 
 const seederBookings = async () => {
     const bookings = await bookingFactory(100);
@@ -84,6 +118,8 @@ const runSeeders = async () => {
         // await seederBookings()
         // await seederReviews()
         // await updateApartmentReviewSeeders()
+        // await chatSeeder()
+        // await messageSeeder()
         console.log('All seeders completed successfully!');
         process.exit(0);
     } catch (err) {

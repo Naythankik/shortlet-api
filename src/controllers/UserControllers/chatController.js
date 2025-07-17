@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const Chat = require("../../models/chat");
 const Message = require("../../models/message");
+
 const chatResource = require('../../resources/chatResource')
 const messageResource = require('../../resources/messageResource')
 
@@ -38,12 +39,7 @@ const createChat = async (req, res) => {
         // If no chat, create one
         if (!chat) {
             chat = await Chat.create({
-                participants: [senderId, receiverId],
-                lastMessage: {
-                    text: message,
-                    at: new Date(),
-                    sender: senderId,
-                },
+                participants: [senderId, receiverId]
             });
         }
 
@@ -56,18 +52,18 @@ const createChat = async (req, res) => {
             readBy: [senderId],
         });
 
-        // Update last message on686d8eb87d6cb87a44413f23 chat
         chat.lastMessage = {
             text: message,
             at: newMessage.createdAt,
             sender: senderId,
         };
         await chat.save();
+        const messages = await Message.findById(newMessage._id).populate('chat')
 
         return res.status(201).json({
             message: 'Message sent successfully',
             chat: chatResource(chat),
-            newMessage: messageResource(newMessage),
+            newMessage: messageResource(messages),
         });
     } catch (err) {
         console.error(err);

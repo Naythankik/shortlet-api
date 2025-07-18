@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon app.js",
     "seed": "node seeder.js",
-    "cron": "node cron/sendDailyNotification.js"
+    "cron": "node schedulers/cronJobs.js"
   },
   "keywords": [],
   "author": "",
